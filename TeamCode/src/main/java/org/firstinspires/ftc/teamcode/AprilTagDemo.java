@@ -22,6 +22,7 @@ public class AprilTagDemo extends LinearOpMode
 
     static final double FEET_PER_METER = 3.28084;
 
+
     // Lens intrinsics
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C920 webcam at 800x448.
@@ -34,10 +35,7 @@ public class AprilTagDemo extends LinearOpMode
     // UNITS ARE METERS
     double tagsize = 0.166;
 
-    int parkingSpot;
-    int confidenceLevel1;
-    int confidenceLevel2;
-    int confidenceLevel3;
+
     int numFramesWithoutDetection = 0;
 
     int[] arrayDetections = new int[10];
@@ -78,12 +76,12 @@ public class AprilTagDemo extends LinearOpMode
 
             }
         });
-
+        waitForStart();
         telemetry.setMsTransmissionInterval(50);
 
-        while (opModeInInit())
+        while (opModeIsActive())
         {
-            camera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
+          //camera.startStreaming(800, 448, OpenCvCameraRotation.UPRIGHT);
             // Calling getDetectionsUpdate() will only return an object if there was a new frame
             // processed since the last time we called it. Otherwise, it will return null. This
             // enables us to only run logic when there has been a new frame, as opposed to the
@@ -116,7 +114,7 @@ public class AprilTagDemo extends LinearOpMode
                 {
                     insertDetection(detections.get(0).id);
                     numFramesWithoutDetection = 0;
-                    telemetry.addLine(String.format("Detection", detections.get(0).id));
+                   // telemetry.addLine(String.format("Detection", arrayDetections));
                     // If the target is within 1 meter, turn on high decimation to
                     // increase the frame rate
                     if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS)
@@ -127,6 +125,15 @@ public class AprilTagDemo extends LinearOpMode
 
                     for(AprilTagDetection detection : detections)
                     {
+
+                        if (detection.id == 0) {
+                            telemetry.addLine(String.format("Correct ID"));
+                        }
+
+                        else {
+                            telemetry.addLine(String.format("Wrong ID"));
+                        }
+
 
 
                         telemetry.addLine(String.format("\nDetected tag ID=%d", detection.id));
@@ -145,6 +152,6 @@ public class AprilTagDemo extends LinearOpMode
             sleep(20);
 
         }
-        //waitForStart();
+
     }
 }
