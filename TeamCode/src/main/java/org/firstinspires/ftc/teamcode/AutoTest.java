@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,6 +13,7 @@ public class AutoTest extends LinearOpMode {
     public DcMotor back;
     public DcMotor front;
     public DcMotor right;
+    public BNO055IMU imu;
 
     @Override
     public void runOpMode() {
@@ -20,35 +22,36 @@ public class AutoTest extends LinearOpMode {
         front = hardwareMap.get(DcMotor.class, "front");
         right = hardwareMap.get(DcMotor.class, "right");
         ColorSensor color1 = hardwareMap.colorSensor.get("color1");
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        BNO055IMU.Parameters params = new BNO055IMU.Parameters();
+        imu.initialize(params);
         waitForStart();
 
-        telemetry.addData("red", color1.red());
-        telemetry.addData("blue", color1.blue());
-        telemetry.addData("green", color1.green());
-        telemetry.addData("alpha", color1.alpha());
-        telemetry.update();
+        // Move to the left
+        back.setPower(0.5);
+        front.setPower(-0.5);
 
-        //left.setPower(-1);
-        // back.setPower(1);
-        //front.setPower(-1);
-        // right.setPower(1);
-
-        while (color1.alpha() < 15) {
-            back.setPower(1);
-            front.setPower(-1);
-        }
+        //Continue moving until robot is on tape
+        while(opModeIsActive() && color1.red() <750);
 
         back.setPower(0);
         front.setPower(0);
-        sleep(500);
+        sleep(1000);
 
-        while (color1.alpha() < 15) {
-            right.setPower(-1);
-            left.setPower(1);
-        }
+        // Move forward
+        right.setPower(-0.5);
+        left.setPower(0.5);
+        sleep(1000);
 
-        back.setPower(0);
-        front.setPower(0);
+        //Continue moving until robot is on tape
+        while (opModeIsActive() && color1.red() < 750 );
+
+        right.setPower(0);
+        left.setPower(0);
+        sleep(1000);
 
 
 
