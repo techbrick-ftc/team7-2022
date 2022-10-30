@@ -4,6 +4,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import java.lang.Math;
@@ -28,11 +29,28 @@ public class AdjustDriving extends LinearOpMode {
         front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right.setDirection(DcMotorSimple.Direction.REVERSE);
+        front.setDirection(DcMotorSimple.Direction.REVERSE);
 
 
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         imu.initialize(params);
         waitForStart();
+
+        double start = getRuntime();
+        double startAngle = imu.getAngularOrientation().firstAngle;
+
+        while(opModeIsActive() && getRuntime() - start < 10) {
+            telemetry.addData("Angle: ", imu.getAngularOrientation().firstAngle);
+            telemetry.update();
+
+            double difference = imu.getAngularOrientation().firstAngle - startAngle;
+
+
+            right.setPower(0.5 + difference);
+            left.setPower(0.5 - difference);
+
+        }
 
 
 
