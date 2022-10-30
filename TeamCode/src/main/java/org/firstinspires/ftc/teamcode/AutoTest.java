@@ -27,11 +27,17 @@ public class AutoTest extends LinearOpMode {
         }
         return newTheta;
     }
+    boolean shouldStopTurning(double targetAngle) {
+        double currentAngle = imu.getAngularOrientation().firstAngle;
+        return Math.abs(currentAngle - targetAngle) < .005 * Math.PI;
+
+    }
+
 
     void turnRobot(double angle, double speed, boolean clockwise) {
         double directionalSpeed = clockwise ? -speed: speed;
         double targetAngle = wrap(imu.getAngularOrientation().firstAngle + angle);
-        while(opModeIsActive() && imu.getAngularOrientation().firstAngle >= targetAngle) {
+        while(opModeIsActive() && !shouldStopTurning(targetAngle)) {
             telemetry.addData("angle", imu.getAngularOrientation().firstAngle);
             telemetry.update();
             back.setPower(directionalSpeed);
@@ -57,6 +63,8 @@ public class AutoTest extends LinearOpMode {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
 
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
@@ -68,13 +76,13 @@ public class AutoTest extends LinearOpMode {
         front.setPower(-0.5);
 
         //Continue moving until robot is on tape
-        while(opModeIsActive() && color1.red() <750);
+       while(opModeIsActive() && color1.red() <750);
 
-        back.setPower(0);
-        front.setPower(0);
+       back.setPower(0);
+       front.setPower(0);
         sleep(1000);
 
-        turnRobot(3*Math.PI/4, 0.5, true);
+
 
         // Move forward
         right.setPower(-0.5);
@@ -87,6 +95,9 @@ public class AutoTest extends LinearOpMode {
         right.setPower(0);
         left.setPower(0);
         sleep(1000);
+
+        turnRobot(-Math.PI/2, 0.3, true);
+
 
 
 
