@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -8,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import java.lang.Math;
+import com.acmerobotics.dashboard.FtcDashboard;
 
 @TeleOp(name = "AutoTest", group = "Test")
 public class AutoTest extends LinearOpMode {
@@ -16,12 +18,13 @@ public class AutoTest extends LinearOpMode {
     public DcMotor front;
     public DcMotor right;
     public BNO055IMU imu;
+    private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
 
     void drivingCorrectionStraight(double startAngle2, double power) {
-       double difference = imu.getAngularOrientation().firstAngle - startAngle2;
-       right.setPower(power + difference);
-       left.setPower(power - difference);
+        double difference = imu.getAngularOrientation().firstAngle - startAngle2;
+        right.setPower(power + difference);
+        left.setPower(power - difference);
     }
 
     void drivingCorrectionLeft(double startAngle, double power) {
@@ -33,7 +36,7 @@ public class AutoTest extends LinearOpMode {
 
     private double wrap(double theta) {
         double newTheta = theta;
-        while(Math.abs(newTheta) > Math.PI) {
+        while (Math.abs(newTheta) > Math.PI) {
             if (newTheta < -Math.PI) {
                 newTheta += Math.PI * 2;
             } else {
@@ -42,6 +45,7 @@ public class AutoTest extends LinearOpMode {
         }
         return newTheta;
     }
+
     boolean shouldStopTurning(double targetAngle) {
         double currentAngle = imu.getAngularOrientation().firstAngle;
         return Math.abs(currentAngle - targetAngle) < .005 * Math.PI;
@@ -50,9 +54,9 @@ public class AutoTest extends LinearOpMode {
 
 
     void turnRobot(double angle, double speed, boolean clockwise) {
-        double directionalSpeed = clockwise ? -speed: speed;
+        double directionalSpeed = clockwise ? -speed : speed;
         double targetAngle = wrap(imu.getAngularOrientation().firstAngle + angle);
-        while(opModeIsActive() && !shouldStopTurning(targetAngle)) {
+        while (opModeIsActive() && !shouldStopTurning(targetAngle)) {
             telemetry.addData("angle", imu.getAngularOrientation().firstAngle);
             telemetry.update();
             back.setPower(directionalSpeed);
@@ -70,6 +74,7 @@ public class AutoTest extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+        TelemetryPacket packet = new TelemetryPacket();
         left = hardwareMap.get(DcMotor.class, "left");
         back = hardwareMap.get(DcMotor.class, "back");
         front = hardwareMap.get(DcMotor.class, "front");
@@ -89,13 +94,23 @@ public class AutoTest extends LinearOpMode {
 
         double startAngle = imu.getAngularOrientation().firstAngle;
 
-        //Continue moving until robot is on tape
-       while(opModeIsActive() && color1.red() <750){
-           drivingCorrectionLeft(startAngle, 0.5);
-       }
+        //  packet.addLine("Ticks Before " + front.getCurrentPosition());
+        dashboard.sendTelemetryPacket(packet);
 
-       back.setPower(0);
-       front.setPower(0);
+        int frontpos = front.getCurrentPosition();
+        //Continue moving until robot is on tape
+        while (opModeIsActive() && color1.red() < 400 && front.getCurrentPosition() - frontpos < 5500) {
+            drivingCorrectionLeft(startAngle, 0.5);
+            //  packet.addLine("Red Color " + color1.red());
+            packet.put("Red", color1.red());
+            packet.put("Ticks", front.getCurrentPosition());
+            dashboard.sendTelemetryPacket(packet);
+        }
+
+        packet.addLine("Ticks After " + front.getCurrentPosition());
+        dashboard.sendTelemetryPacket(packet);
+        back.setPower(0);
+        front.setPower(0);
         sleep(1000);
 
 
@@ -103,19 +118,32 @@ public class AutoTest extends LinearOpMode {
 
         right.setPower(0.5);
         left.setPower(0.5);
-        sleep(1000);
+
 
         double startTime = getRuntime();
-        //Continue moving until robot is on tape
-        while (opModeIsActive() && color1.red()  < 750 || getRuntime() - startTime < 1 ){
+        //Continue moving until robot is on tape and make sure robot has moved for at least 1 second
+        // this is so robot is for sure off the tape
+        int leftpos = left.getCurrentPosition();
+
+        while (opModeIsActive() && ((color1.red() < 400 && left.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 )) {
             drivingCorrectionStraight(startAngle2, 0.5);
+            // packet.addLine("Runtime" + (getRuntime() - startTime));
+            //  packet.addLine("Color Red" + color1.red());
+            packet.put("Red", color1.red());
+            packet.put("Ticks", left.getCurrentPosition());
+            dashboard.sendTelemetryPacket(packet);
         }
+
 
         right.setPower(0);
         left.setPower(0);
         sleep(1000);
 
-        turnRobot(-Math.PI/2, 0.3, true);
+        turnRobot(-Math.PI / 2, 0.3, true);
 
+        while(opModeIsActive()){
+            packet.put("Red", color1.red());
+            packet.put("Ticks", front.getCurrentPosition());
         }
     }
+}

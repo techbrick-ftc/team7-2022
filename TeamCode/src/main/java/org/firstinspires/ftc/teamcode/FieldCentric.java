@@ -9,16 +9,19 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp
 public class FieldCentric extends LinearOpMode {
+
     @Override
     public void runOpMode()  {
 
-       DcMotor left = hardwareMap.get(DcMotor.class, "left");
+        DcMotor left = hardwareMap.get(DcMotor.class, "left");
         DcMotor back = hardwareMap.get(DcMotor.class, "back");
         DcMotor front = hardwareMap.get(DcMotor.class, "front");
         DcMotor right = hardwareMap.get(DcMotor.class, "right");
+        DcMotor stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
+        DcMotor armMotor = hardwareMap.get(DcMotor.class, "armMotor");
 
-        right.setDirection(DcMotorSimple.Direction.REVERSE);
-        front.setDirection(DcMotorSimple.Direction.REVERSE);
+        left.setDirection(DcMotorSimple.Direction.REVERSE);
+        back.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Retrieve the IMU from the hardware map
         BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -33,6 +36,36 @@ public class FieldCentric extends LinearOpMode {
         if (isStopRequested()) return;
 
         while (opModeIsActive()) {
+
+            if (gamepad2.right_trigger != 0) {
+                if (stringMotor.getCurrentPosition() > 500) {
+                    stringMotor.setPower(0);
+                } else {
+                    stringMotor.setPower(-gamepad2.right_trigger);
+                }
+            }
+
+            if (gamepad2.left_trigger != 0) {
+                if (stringMotor.getCurrentPosition() <= 0) {
+                    stringMotor.setPower(0);
+                } else {
+                    stringMotor.setPower(gamepad2.left_trigger);
+                }
+            }
+
+
+
+            if (gamepad2.left_stick_y != 0) {
+                if (armMotor.getCurrentPosition() > 500 || armMotor.getCurrentPosition() <= 0) {
+                    stringMotor.setPower(0);
+                } else {
+                    armMotor.setPower(-gamepad2.left_stick_y);
+                }
+            }
+
+
+
+
 
             double y = -gamepad1.left_stick_y; // Remember, this is reversed!
             double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
