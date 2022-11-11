@@ -23,6 +23,9 @@ public class FieldCentric extends LinearOpMode {
         DcMotor armMotor = hardwareMap.get(DcMotor.class, "armMotor");
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         stringMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        double zeroAngle = 0;
+
+
 
 
 
@@ -67,15 +70,11 @@ public class FieldCentric extends LinearOpMode {
             packet.put("position ARM", armMotor.getCurrentPosition());
             dashboard.sendTelemetryPacket(packet);
 
-            if (gamepad2.left_stick_y != 0) {
-                if ((armMotor.getCurrentPosition() >= 50000 && gamepad2.left_stick_y<0) || (armMotor.getCurrentPosition() <= 0 && gamepad2.left_stick_y>0)) {
-                    stringMotor.setPower(0);
-                } else {
-                    armMotor.setPower(-gamepad2.left_stick_y);
+            if ((armMotor.getCurrentPosition() >= 50000 && gamepad2.left_stick_y<0) || (armMotor.getCurrentPosition() <= -500000 && gamepad2.left_stick_y>0)) {
+                stringMotor.setPower(0);
+            } else {
+                    armMotor.setPower(gamepad2.left_stick_y);
                 }
-            }
-
-
 
 
 
@@ -84,7 +83,11 @@ public class FieldCentric extends LinearOpMode {
             double rx = gamepad1.right_stick_x;
 
             // Read inverse IMU heading, as the IMU heading is CW positive
-            double botHeading = -imu.getAngularOrientation().firstAngle;
+            double botHeading = -imu.getAngularOrientation().firstAngle - zeroAngle;
+
+            if (gamepad1.y) {
+                zeroAngle = -imu.getAngularOrientation().firstAngle;
+            }
 
             double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
             double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
