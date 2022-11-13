@@ -13,24 +13,24 @@ import com.acmerobotics.dashboard.FtcDashboard;
 
 @TeleOp(name = "AutoTest", group = "Test")
 public class AutoTest extends LinearOpMode {
-    public DcMotor left;
-    public DcMotor back;
-    public DcMotor front;
-    public DcMotor right;
+    public DcMotor frontLeft;
+    public DcMotor backLeft;
+    public DcMotor frontRight;
+    public DcMotor backRight;
     public BNO055IMU imu;
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
 
     void drivingCorrectionStraight(double startAngle2, double power) {
         double difference = imu.getAngularOrientation().firstAngle - startAngle2;
-        right.setPower(power + difference);
-        left.setPower(power - difference);
+        backRight.setPower(power + difference);
+        frontLeft.setPower(power - difference);
     }
 
     void drivingCorrectionLeft(double startAngle, double power) {
         double difference = imu.getAngularOrientation().firstAngle - startAngle;
-        front.setPower(power + difference);
-        back.setPower(power - difference);
+        frontRight.setPower(power + difference);
+        backLeft.setPower(power - difference);
     }
 
 
@@ -59,34 +59,34 @@ public class AutoTest extends LinearOpMode {
         while (opModeIsActive() && !shouldStopTurning(targetAngle)) {
             telemetry.addData("angle", imu.getAngularOrientation().firstAngle);
             telemetry.update();
-            back.setPower(directionalSpeed);
-            front.setPower(-directionalSpeed);
-            right.setPower(-directionalSpeed);
-            left.setPower(directionalSpeed);
+            backLeft.setPower(directionalSpeed);
+            frontRight.setPower(-directionalSpeed);
+            backRight.setPower(-directionalSpeed);
+            frontLeft.setPower(directionalSpeed);
         }
 
-        back.setPower(0);
-        front.setPower(0);
-        right.setPower(0);
-        left.setPower(0);
+        backLeft.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
+        frontLeft.setPower(0);
 
     }
 
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
-        left = hardwareMap.get(DcMotor.class, "left");
-        back = hardwareMap.get(DcMotor.class, "back");
-        front = hardwareMap.get(DcMotor.class, "front");
-        right = hardwareMap.get(DcMotor.class, "right");
-        ColorSensor color1 = hardwareMap.colorSensor.get("color1");
+        frontLeft = hardwareMap.get(DcMotor.class, "left");
+        backLeft = hardwareMap.get(DcMotor.class, "back");
+        frontRight = hardwareMap.get(DcMotor.class, "front");
+        backRight = hardwareMap.get(DcMotor.class, "right");
+        ColorSensor colorFR = hardwareMap.colorSensor.get("colorFR");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
-        back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        left.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        right.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        right.setDirection(DcMotorSimple.Direction.REVERSE);
-        front.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         imu.initialize(params);
@@ -97,53 +97,53 @@ public class AutoTest extends LinearOpMode {
         //  packet.addLine("Ticks Before " + front.getCurrentPosition());
         dashboard.sendTelemetryPacket(packet);
 
-        int frontpos = front.getCurrentPosition();
+        int frontpos = frontRight.getCurrentPosition();
         //Continue moving until robot is on tape
-        while (opModeIsActive() && color1.red() < 400 && front.getCurrentPosition() - frontpos < 5500) {
+        while (opModeIsActive() && colorFR.red() < 400 && frontRight.getCurrentPosition() - frontpos < 5500) {
             drivingCorrectionLeft(startAngle, 0.5);
-            //  packet.addLine("Red Color " + color1.red());
-            packet.put("Red", color1.red());
-            packet.put("Ticks", front.getCurrentPosition());
+            //  packet.addLine("Red Color " + colorFR.red());
+            packet.put("Red", colorFR.red());
+            packet.put("Ticks", frontRight.getCurrentPosition());
             dashboard.sendTelemetryPacket(packet);
         }
 
-        packet.addLine("Ticks After " + front.getCurrentPosition());
+        packet.addLine("Ticks After " + frontRight.getCurrentPosition());
         dashboard.sendTelemetryPacket(packet);
-        back.setPower(0);
-        front.setPower(0);
+        backLeft.setPower(0);
+        frontRight.setPower(0);
         sleep(1000);
 
 
         double startAngle2 = imu.getAngularOrientation().firstAngle;
 
-        right.setPower(0.5);
-        left.setPower(0.5);
+        backRight.setPower(0.5);
+        frontLeft.setPower(0.5);
 
 
         double startTime = getRuntime();
         //Continue moving until robot is on tape and make sure robot has moved for at least 1 second
         // this is so robot is for sure off the tape
-        int leftpos = left.getCurrentPosition();
+        int leftpos = frontLeft.getCurrentPosition();
 
-        while (opModeIsActive() && ((color1.red() < 400 && left.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 )) {
+        while (opModeIsActive() && ((colorFR.red() < 400 && frontLeft.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 )) {
             drivingCorrectionStraight(startAngle2, 0.5);
             // packet.addLine("Runtime" + (getRuntime() - startTime));
-            //  packet.addLine("Color Red" + color1.red());
-            packet.put("Red", color1.red());
-            packet.put("Ticks", left.getCurrentPosition());
+            //  packet.addLine("Color Red" + colorFR.red());
+            packet.put("Red", colorFR.red());
+            packet.put("Ticks", frontLeft.getCurrentPosition());
             dashboard.sendTelemetryPacket(packet);
         }
 
 
-        right.setPower(0);
-        left.setPower(0);
+        backRight.setPower(0);
+        frontLeft.setPower(0);
         sleep(1000);
 
         turnRobot(-Math.PI / 2, 0.3, true);
 
         while(opModeIsActive()){
-            packet.put("Red", color1.red());
-            packet.put("Ticks", front.getCurrentPosition());
+            packet.put("Red", colorFR.red());
+            packet.put("Ticks", frontRight.getCurrentPosition());
         }
     }
 }
