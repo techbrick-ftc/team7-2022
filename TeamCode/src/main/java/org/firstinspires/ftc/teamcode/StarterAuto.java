@@ -28,7 +28,7 @@ Expansion Hub:
  I2C Port 3: colorBR
 
  Servo Port 0: grabbaServo
- Servo Port 5: wristServo
+
 
  Motor Port 0: armMotor
  Motor Port 2: stringMotor
@@ -42,6 +42,8 @@ Expansion Hub:
   I2C Port 0: imu
 
   Digital 0: armuptouch
+
+   Servo Port 5: wristServo
  */
 
 public class StarterAuto extends LinearOpMode {
@@ -94,14 +96,28 @@ public class StarterAuto extends LinearOpMode {
 
     void drivingCorrectionStraight(double startAngle2, double power) {
         double difference = imu.getAngularOrientation().firstAngle - startAngle2;
-        backRight.setPower(power + difference);
-        frontLeft.setPower(power - difference);
+        backRight.setPower(power - difference);
+        backLeft.setPower(power + difference);
+        frontLeft.setPower(power + difference);
+        frontRight.setPower(power - difference);
+
     }
+
+    void motorsStop(){
+        backRight.setPower(0);
+        backLeft.setPower(0);
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+
+    }
+
 
     void drivingCorrectionLeft(double startAngle, double power) {
         double difference = imu.getAngularOrientation().firstAngle - startAngle;
-        frontRight.setPower(power + difference);
-        backLeft.setPower(power - difference);
+        frontRight.setPower(power - difference);
+        frontLeft.setPower(-power + difference);
+        backLeft.setPower(power + difference);
+        backRight.setPower(-power - difference);
     }
 
     void initAprilTags() {

@@ -34,8 +34,10 @@ public class FieldCentric extends LinearOpMode {
         stringMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         double zeroAngle = 0;
 
+        double position1 = 0;
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad cur2 = new Gamepad();
+
 
         boolean grabberOpen = false;
 
@@ -106,9 +108,38 @@ public class FieldCentric extends LinearOpMode {
                     grabberOpen = false;
                 }
             }
-            telemetry.addData("gamepad", gamepad2.a);
-            telemetry.addData("previous button", previousGamepad2.a);
-            telemetry.addData("equal", (gamepad2.a == previousGamepad2.a));
+
+
+            if (cur2.dpad_right && !previousGamepad2.dpad_right){
+                position1 += 0.25;
+
+            }
+            if (cur2.dpad_left && !previousGamepad2.dpad_left){
+                position1 -= 0.25;
+
+            }
+
+            if (cur2.dpad_up && !previousGamepad2.dpad_up){
+                position1 = 1;
+
+            }
+
+            if (cur2.dpad_down && !previousGamepad2.dpad_down){
+                position1 = 0;
+            }
+
+            if (position1 > 1){
+                position1 = 1;
+            }
+           else if (position1 < 0){
+                position1 = 0;
+            }
+            wristServo.setPosition(position1);
+
+
+            telemetry.addData("position", wristServo.getPosition());
+            telemetry.addData("end", position1);
+
             telemetry.update();
 
 

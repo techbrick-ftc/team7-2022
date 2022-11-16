@@ -35,7 +35,7 @@ public class SimpleAuto extends StarterAuto {
         packet.addLine("id after");
         dashboard.sendTelemetryPacket(packet);
         int tag = getAprilTag();
-        /*
+
         if (tag == 1){
             double startAngle = imu.getAngularOrientation().firstAngle;
 
@@ -46,14 +46,12 @@ public class SimpleAuto extends StarterAuto {
                 //  packet.addLine("Red Color " + color1.red());
             }
 
-            backLeft.setPower(0);
-            frontRight.setPower(0);
+            motorsStop();
             sleep(1000);
 
             double startAngle2 = imu.getAngularOrientation().firstAngle;
 
-            backRight.setPower(0.5);
-            frontLeft.setPower(0.5);
+            drivingCorrectionStraight(startAngle2, 0.5);
 
 
             double startTime = getRuntime();
@@ -65,12 +63,12 @@ public class SimpleAuto extends StarterAuto {
                 drivingCorrectionStraight(startAngle2, 0.5);
             }
 
-            backRight.setPower(0);
-            frontLeft.setPower(0);
+            motorsStop();
             sleep(1000);
 
         }
         else if (tag == 2){
+            telemetry.addLine("tag is 2!");
             double startAngle = imu.getAngularOrientation().firstAngle;
 
             int frontpos = frontRight.getCurrentPosition();
@@ -80,14 +78,12 @@ public class SimpleAuto extends StarterAuto {
                 //  packet.addLine("Red Color " + color1.red());
             }
 
-            backLeft.setPower(0);
-            frontRight.setPower(0);
+            motorsStop();
             sleep(1000);
 
             double startAngle2 = imu.getAngularOrientation().firstAngle;
 
-            backRight.setPower(0.5);
-            frontLeft.setPower(0.5);
+            drivingCorrectionStraight(startAngle2, 0.5);
 
 
             double startTime = getRuntime();
@@ -99,25 +95,25 @@ public class SimpleAuto extends StarterAuto {
                 drivingCorrectionStraight(startAngle2, 0.5);
             }
 
-            backRight.setPower(0);
-            frontLeft.setPower(0);
+           motorsStop();
             sleep(1000);
 
-            frontRight.setPower(-0.5);
-            backLeft.setPower(0.5);
+            drivingCorrectionLeft(startAngle2, -0.5);
             sleep(1000);
 
         }
         else if (tag == 3){
             double startAngle3 = imu.getAngularOrientation().firstAngle;
-            frontRight.setPower(-0.5);
-            backLeft.setPower(0.5);
+            drivingCorrectionLeft(startAngle3, -0.5);
             sleep(1000);
+            motorsStop();
 
             drivingCorrectionStraight(startAngle3, 0.5);
+            sleep(1000);
+            motorsStop();
             //drive
         }
-            */
+
     }
 
 }
