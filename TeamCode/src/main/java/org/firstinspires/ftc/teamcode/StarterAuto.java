@@ -47,6 +47,8 @@ Expansion Hub:
  */
 
 public class StarterAuto extends LinearOpMode {
+
+
     OpenCvCamera camera;
     AprilTagDetectionPipeline aprilTagDetectionPipeline;
 
@@ -95,7 +97,16 @@ public class StarterAuto extends LinearOpMode {
     public Servo wristServo;
 
     void drivingCorrectionStraight(double startAngle2, double power) {
+
+        TelemetryPacket packet = new TelemetryPacket();
+
+
+        packet.put("angle", imu.getAngularOrientation().firstAngle);
+        dashboard.sendTelemetryPacket(packet);
+
         double difference = imu.getAngularOrientation().firstAngle - startAngle2;
+        difference /= Math.PI * 2;
+        difference *= power;
         backRight.setPower(power - difference);
         backLeft.setPower(power + difference);
         frontLeft.setPower(power + difference);
@@ -103,22 +114,57 @@ public class StarterAuto extends LinearOpMode {
 
     }
 
-    void motorsStop(){
-        backRight.setPower(0);
-        backLeft.setPower(0);
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-
-    }
-
 
     void drivingCorrectionLeft(double startAngle, double power) {
+        TelemetryPacket packet = new TelemetryPacket();
+
+        packet.put("angle", imu.getAngularOrientation().firstAngle);
+        dashboard.sendTelemetryPacket(packet);
+
         double difference = imu.getAngularOrientation().firstAngle - startAngle;
+        difference /= Math.PI * 2;
+        difference *= power;
         frontRight.setPower(power - difference);
         frontLeft.setPower(-power + difference);
         backLeft.setPower(power + difference);
         backRight.setPower(-power - difference);
     }
+
+
+    void motorsStop() {
+        backRight.setPower(0);
+        backLeft.setPower(0);
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+    }
+
+    boolean tapeSensor45(boolean red) {
+        if (red && colorFL.red() > 400 && colorBR.red() > 1000) {
+            return false;
+        }
+       else if (!red && colorFR.blue() > 400 && colorBL.blue() > 1000) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    boolean tapeSensor90(boolean red) {
+
+        if (red && colorFL.red() > 400 && colorFR.red() > 400){
+            return false;
+        }
+        else if (!red && colorFL.blue() > 400 && colorFR.blue() > 400){
+            return false;
+        }
+        else{
+            return true;
+        }
+
+    }
+
+
+
 
     void initAprilTags() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -142,12 +188,15 @@ public class StarterAuto extends LinearOpMode {
         FtcDashboard.getInstance().startCameraStream(camera, 0);
     }
 
-    int getAprilTag() {
+    int getAprilTag(double timeOut) {
         ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
         FtcDashboard dashboard = FtcDashboard.getInstance();
         int lastIDSeen = 0;
         int numofTimesSeen = 0;
-        while (opModeIsActive() && numofTimesSeen < 10){
+        double time = getRuntime();
+
+
+        while (opModeIsActive() && numofTimesSeen < 10 && (getRuntime() - time) < timeOut ){
             TelemetryPacket packet = new TelemetryPacket();
             packet.put("lastIDSeen " , lastIDSeen);
             packet.put("numofTimesSeen", numofTimesSeen);
