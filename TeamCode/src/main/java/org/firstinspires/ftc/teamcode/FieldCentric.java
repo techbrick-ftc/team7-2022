@@ -67,14 +67,13 @@ public class FieldCentric extends LinearOpMode {
 
 
             if (gamepad2.right_trigger != 0) {
-                if (stringMotor.getCurrentPosition() < -2550) {
-                    stringMotor.setPower(0);
-                } else {
+//                if (stringMotor.getCurrentPosition() < -255000) {
+//                    stringMotor.setPower(0);
+//                } else {
                     stringMotor.setPower(-gamepad2.right_trigger);
-                }
+//                }
             }
-            packet.put("Left Trigger", gamepad2.left_trigger);
-            packet.put("position", stringMotor.getCurrentPosition());
+
             dashboard.sendTelemetryPacket(packet);
 
             if (gamepad2.left_trigger != 0) {
@@ -86,9 +85,7 @@ public class FieldCentric extends LinearOpMode {
             }
 
 
-            packet.put("LeftStickY", gamepad2.left_stick_y);
-            packet.put("position ARM", armMotor.getCurrentPosition());
-            dashboard.sendTelemetryPacket(packet);
+
 
             if ((armMotor.getCurrentPosition() >= 50000 && gamepad2.left_stick_y<0 ) || (gamepad2.left_stick_y>0 && armuptouch.isPressed())) {
                 stringMotor.setPower(0);
@@ -111,11 +108,11 @@ public class FieldCentric extends LinearOpMode {
 
 
             if (cur2.dpad_right && !previousGamepad2.dpad_right){
-                position1 += 0.25;
+                position1 += 0.10;
 
             }
             if (cur2.dpad_left && !previousGamepad2.dpad_left){
-                position1 -= 0.25;
+                position1 -= 0.10;
 
             }
 

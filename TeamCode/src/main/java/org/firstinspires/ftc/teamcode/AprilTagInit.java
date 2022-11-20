@@ -29,10 +29,10 @@ public class AprilTagInit extends LinearOpMode
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C920 webcam at 800x448.
     // You will need to do your own calibration for other configurations!
-    double fx = 1431.704;
-    double fy = 1437.693;
-    double cx = 641.105;
-    double cy = 353.960;
+    double fx = 1481.603;
+    double fy = 1527.539;
+    double cx = 550.003;
+    double cy = 90.751;
 
     // UNITS ARE METERS
     double tagsize = 0.045;

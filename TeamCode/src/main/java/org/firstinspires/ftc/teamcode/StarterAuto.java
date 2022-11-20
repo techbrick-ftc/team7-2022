@@ -27,7 +27,8 @@ Expansion Hub:
  I2C Port 2: colorBL
  I2C Port 3: colorBR
 
- Servo Port 0: grabbaServo
+ Servo Port 0:wristServo
+
 
 
  Motor Port 0: armMotor
@@ -43,7 +44,7 @@ Expansion Hub:
 
   Digital 0: armuptouch
 
-   Servo Port 5: wristServo
+   Servo Port 5:grabbaServo
  */
 
 public class StarterAuto extends LinearOpMode {
@@ -54,10 +55,10 @@ public class StarterAuto extends LinearOpMode {
 
     static final double FEET_PER_METER = 3.28084;
 
-    double fx = 1431.704;
-    double fy = 1437.693;
-    double cx = 641.105;
-    double cy = 353.960;
+    double fx = 1481.603;
+    double fy = 1527.539;
+    double cx = 550.003;
+    double cy = 90.751;
 
     // UNITS ARE METERS
     double tagsize = 0.045;
@@ -162,7 +163,6 @@ public class StarterAuto extends LinearOpMode {
         }
 
     }
-
 
 
 
@@ -300,7 +300,7 @@ public class StarterAuto extends LinearOpMode {
 
 
     void turnRobot(double angle, double speed, boolean clockwise) {
-        double directionalSpeed = clockwise ? -speed : speed;
+        double directionalSpeed = clockwise ? speed : -speed;
         double targetAngle = wrap(imu.getAngularOrientation().firstAngle + angle);
         while (opModeIsActive() && !shouldStopTurning(targetAngle)) {
             telemetry.addData("angle", imu.getAngularOrientation().firstAngle);

@@ -51,16 +51,24 @@ public class SimpleAuto extends StarterAuto {
             //Continue moving until robot is on tape
             while (opModeIsActive() && tapeSensor45(true) && frontRight.getCurrentPosition() - frontpos < 5500) {
                 drivingCorrectionLeft(startAngle, 0.5);
-                //  packet.addLine("Red Color " + color1.red());
+
             }
 
             motorsStop();
             sleep(1000);
 
 
+            // loop until strafe you strafe a little right, want to make sure you dont hit stack of cups
+            startAngle = imu.getAngularOrientation().firstAngle;
+            int backleftpos = backLeft.getCurrentPosition();
+            while(opModeIsActive() && backLeft.getCurrentPosition() - backleftpos < TICKSPERBLOCK * 0.05){
+                drivingCorrectionLeft(startAngle, -0.5);
+            }
+            motorsStop();
+            sleep(500);
+
             drivingCorrectionStraight(startAngle, 0.5);
-            packet.addLine("spinny");
-            dashboard.sendTelemetryPacket(packet);
+
 
             double startTime = getRuntime();
             //Continue moving until robot is on tape and make sure robot has moved for at least 1 second
@@ -111,7 +119,7 @@ public class SimpleAuto extends StarterAuto {
         }
         else if (tag == 3){
 
-            while(opModeIsActive() && colorBR.red() < 400){
+            while(opModeIsActive() && colorBR.red() < 1000){
                 drivingCorrectionLeft(startAngle, -0.5);
             }
             motorsStop();
