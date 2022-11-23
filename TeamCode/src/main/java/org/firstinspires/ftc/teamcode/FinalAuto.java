@@ -94,7 +94,7 @@ public class FinalAuto extends StarterAuto {
         }
 
         // Go straight until in spot #2
-        else if (tag == 2){
+        else if (tag == 2){ 
             while (opModeIsActive() && backRight.getCurrentPosition() - backrightpos < 0.6 * TICKSPERBLOCK){
                 drivingCorrectionStraight(startAngle, 0.5);
             }

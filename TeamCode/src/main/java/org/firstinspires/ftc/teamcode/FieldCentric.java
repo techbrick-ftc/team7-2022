@@ -33,14 +33,17 @@ public class FieldCentric extends LinearOpMode {
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         stringMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         double zeroAngle = 0;
+        double speedMod = 1;
 
         double position1 = 0;
         Gamepad previousGamepad2 = new Gamepad();
+        Gamepad previousGamepad1 = new Gamepad();
+
         Gamepad cur2 = new Gamepad();
+        Gamepad cur1 = new Gamepad();
 
 
         boolean grabberOpen = false;
-
 
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -83,7 +86,6 @@ public class FieldCentric extends LinearOpMode {
                     stringMotor.setPower(gamepad2.left_trigger);
                 }
             }
-
 
 
 
@@ -140,9 +142,9 @@ public class FieldCentric extends LinearOpMode {
             telemetry.update();
 
 
-            double y = -gamepad1.left_stick_y; // Remember, this is reversed!
-            double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
-            double rx = gamepad1.right_stick_x;
+            double y = gamepad1.left_stick_y; // Remember, this is reversed!
+            double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            double rx = -gamepad1.right_stick_x;
 
             // Read inverse IMU heading, as the IMU heading is CW positive
             double botHeading = -imu.getAngularOrientation().firstAngle - zeroAngle;
@@ -150,6 +152,7 @@ public class FieldCentric extends LinearOpMode {
             if (gamepad1.y) {
                 zeroAngle = -imu.getAngularOrientation().firstAngle;
             }
+
 
             double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
             double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
@@ -163,10 +166,27 @@ public class FieldCentric extends LinearOpMode {
             double frontRightPower = (rotY - rotX + rx) / denominator;
             double backRightPower = (rotY + rotX + rx) / denominator;
 
-            frontRight.setPower(frontRightPower);  //front
-            frontLeft.setPower(frontLeftPower);    //left
-            backRight.setPower(backRightPower);   //right
-            backLeft.setPower(backLeftPower);   //back
+
+            if (cur1.x && !previousGamepad1.x){
+                speedMod -= 0.1;
+            }
+
+            if (cur1.b && !previousGamepad1.b){
+                speedMod += 0.1;
+            }
+
+            if (frontRightPower > 1){
+                speedMod = 1;
+            }
+            else if (frontRightPower <= 0.3){
+                speedMod = 0.3;
+            }
+
+
+            frontRight.setPower(frontRightPower * speedMod);  //front
+            frontLeft.setPower(frontLeftPower * speedMod);    //left
+            backRight.setPower(backRightPower * speedMod);   //right
+            backLeft.setPower(backLeftPower * speedMod);   //back
 
 
             try {
