@@ -61,6 +61,8 @@ public class FieldCentric extends LinearOpMode {
 
 
         while (opModeIsActive()) {
+            packet.put("arm encoder", stringMotor.getCurrentPosition());
+            dashboard.sendTelemetryPacket(packet);
 
             try {
                 cur2.copy(gamepad2);
@@ -70,11 +72,11 @@ public class FieldCentric extends LinearOpMode {
 
 
             if (gamepad2.right_trigger != 0) {
-//                if (stringMotor.getCurrentPosition() < -255000) {
-//                    stringMotor.setPower(0);
-//                } else {
+               if (stringMotor.getCurrentPosition() < -3500) {
+                    stringMotor.setPower(0);
+                 } else {
                     stringMotor.setPower(-gamepad2.right_trigger);
-//                }
+                }
             }
 
             dashboard.sendTelemetryPacket(packet);
@@ -157,6 +159,9 @@ public class FieldCentric extends LinearOpMode {
             double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
             double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
 
+            packet.put("rotatex", rotX);
+            packet.put("rotatey", rotY);
+
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio, but only when
             // at least one is out of the range [-1, 1]
@@ -165,6 +170,7 @@ public class FieldCentric extends LinearOpMode {
             double backLeftPower = (rotY - rotX - rx) / denominator;
             double frontRightPower = (rotY - rotX + rx) / denominator;
             double backRightPower = (rotY + rotX + rx) / denominator;
+
 
 
             if (cur1.x && !previousGamepad1.x){
@@ -188,6 +194,11 @@ public class FieldCentric extends LinearOpMode {
             backRight.setPower(backRightPower * speedMod);   //right
             backLeft.setPower(backLeftPower * speedMod);   //back
 
+            packet.put("front right", frontRightPower);
+            packet.put("front left", frontLeftPower);
+            packet.put("back right", backRightPower);
+            packet.put("back left", backLeftPower);
+            dashboard.sendTelemetryPacket(packet);
 
             try {
                 previousGamepad2.copy(cur2);
