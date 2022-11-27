@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -42,7 +43,11 @@ Expansion Hub:
 
   I2C Port 0: imu
 
-  Digital 0: armuptouch
+  Digital 1: armuptouch
+
+  Analog 0 : stringpot
+
+  Analog 2: armpot
 
    Servo Port 5:grabbaServo
  */
@@ -96,6 +101,12 @@ public class StarterAuto extends LinearOpMode {
     public TouchSensor armuptouch;
     public Servo grabbaServo;
     public Servo wristServo;
+    public AnalogInput stringpot;
+    public AnalogInput armpot;
+    public DcMotor armMotor;
+    public DcMotor stringMotor;
+    final double VOLTSPERTRIP = 1.438;
+    final double VOLTSSTRINGUP = 0.437;
 
     void drivingCorrectionStraight(double startAngle2, double power) {
 
@@ -283,7 +294,11 @@ public class StarterAuto extends LinearOpMode {
         colorBL = hardwareMap.colorSensor.get("colorBL");
         grabbaServo = hardwareMap.servo.get("grabbaServo");
         armuptouch = hardwareMap.touchSensor.get("armuptouch");
+        armMotor = hardwareMap.get(DcMotor.class, "armMotor");
+        stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
         wristServo = hardwareMap.servo.get("wristServo");
+        stringpot = hardwareMap.get(AnalogInput.class, "stringpot");
+        armpot = hardwareMap.get(AnalogInput.class, "armpot");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -296,19 +311,61 @@ public class StarterAuto extends LinearOpMode {
         imu.initialize(params);
 
     }
+// picking up = arm pot bigger
 
+    void armpotTurn(double angle){
+        double targVolt = angle/81.8;
 
+        while(opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
+            double power = Math.signum(armpot.getVoltage() - targVolt);
 
-    void turnRobot(double angle, double speed, boolean clockwise) {
-        double directionalSpeed = clockwise ? speed : -speed;
+            if (Math.abs(armpot.getVoltage() - targVolt) < .05){
+                power *= 0.3;
+            }
+            else if (Math.abs(armpot.getVoltage() - targVolt) < .1){
+                power *= 0.5;
+            }
+            armMotor.setPower(power);
+        }
+    }
+
+    void stringpotTurn(double percentoftrip){
+
+        double targetVolt = percentoftrip * VOLTSPERTRIP + VOLTSSTRINGUP;
+
+        while(opModeIsActive() && Math.abs(stringpot.getVoltage() - targetVolt) >= 0.01){
+            double power = Math.signum(stringpot.getVoltage() - targetVolt);
+
+            if (Math.abs(stringpot.getVoltage() - targetVolt) < .05){
+                power *= 0.3;
+            }
+            else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1){
+                power *= 0.5;
+            }
+            stringMotor.setPower(power);
+        }
+    }
+
+    void turnRobot(double angle, boolean clockwise) {
+        double directionalSpeed = clockwise ? 1 : -1;
         double targetAngle = wrap(imu.getAngularOrientation().firstAngle + angle);
         while (opModeIsActive() && !shouldStopTurning(targetAngle)) {
+
             telemetry.addData("angle", imu.getAngularOrientation().firstAngle);
             telemetry.update();
+
+            if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.05 * Math.PI){
+                directionalSpeed *= 0.3;
+            }
+           else if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.1 * Math.PI){
+                directionalSpeed *= 0.5;
+            }
+
             backLeft.setPower(directionalSpeed);
             frontRight.setPower(-directionalSpeed);
             backRight.setPower(-directionalSpeed);
             frontLeft.setPower(directionalSpeed);
+
         }
 
         backLeft.setPower(0);

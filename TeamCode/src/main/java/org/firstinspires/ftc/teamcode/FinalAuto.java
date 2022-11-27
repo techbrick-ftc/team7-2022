@@ -77,7 +77,7 @@ public class FinalAuto extends StarterAuto {
 
         sleep(500);
 
-        turnRobot(-Math.PI / 2, 0.4, true);
+        turnRobot(-Math.PI / 2,true);
         startAngle = imu.getAngularOrientation().firstAngle;
 
         packet.addLine("after turn");

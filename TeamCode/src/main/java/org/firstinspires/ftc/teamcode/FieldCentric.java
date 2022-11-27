@@ -16,24 +16,21 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @TeleOp
 
-public class FieldCentric extends LinearOpMode {
+public class FieldCentric extends StarterAuto{
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
     @Override
     public void runOpMode()  {
         TelemetryPacket packet = new TelemetryPacket();
-        DcMotor frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-        DcMotor backLeft = hardwareMap.get(DcMotor.class, "backLeft");
-        DcMotor frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        DcMotor backRight = hardwareMap.get(DcMotor.class, "backRight");
-        DcMotor stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
-        DcMotor armMotor = hardwareMap.get(DcMotor.class, "armMotor");
-        Servo grabbaServo = hardwareMap.get(Servo.class, "grabbaServo");
-        TouchSensor armuptouch = hardwareMap.get(TouchSensor.class, "armuptouch");
-        Servo wristServo = hardwareMap.get(Servo.class, "wristServo");
-        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        stringMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        initialize();
         double zeroAngle = 0;
         double speedMod = 1;
+
+        final double DEGPERVOLT = 81.8;
+        final double ARMROTATEMAXANGLE = 200.4;
+        final double VOLTSSTRINGDOWN = 1.875;
+        final double VOLTSSTRINGUP = 0.437;
+        int armrotate0 = 0;
+        final int ARMROTATEMAXTICKS = 4729;
 
         double position1 = 0;
         Gamepad previousGamepad2 = new Gamepad();
@@ -59,6 +56,7 @@ public class FieldCentric extends LinearOpMode {
 
         waitForStart();
 
+        zeroAngle = imu.getAngularOrientation().firstAngle;
 
         while (opModeIsActive()) {
             packet.put("arm encoder", stringMotor.getCurrentPosition());
@@ -72,17 +70,18 @@ public class FieldCentric extends LinearOpMode {
 
 
             if (gamepad2.right_trigger != 0) {
-               if (stringMotor.getCurrentPosition() < -3500) {
+               if (stringMotor.getCurrentPosition() < -3500 || stringpot.getVoltage() <= VOLTSSTRINGUP) {
                     stringMotor.setPower(0);
                  } else {
                     stringMotor.setPower(-gamepad2.right_trigger);
                 }
             }
+            packet.put("string encoder", stringMotor.getCurrentPosition());
 
             dashboard.sendTelemetryPacket(packet);
 
             if (gamepad2.left_trigger != 0) {
-                if (stringMotor.getCurrentPosition() >= 0) {
+                if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
                     stringMotor.setPower(0);
                 } else {
                     stringMotor.setPower(gamepad2.left_trigger);
@@ -91,13 +90,21 @@ public class FieldCentric extends LinearOpMode {
 
 
 
-            if ((armMotor.getCurrentPosition() >= 50000 && gamepad2.left_stick_y<0 ) || (gamepad2.left_stick_y>0 && armuptouch.isPressed())) {
-                stringMotor.setPower(0);
+            if ((gamepad2.left_stick_y < 0 && (armrotate0 - armMotor.getCurrentPosition()  >= ARMROTATEMAXTICKS || armpot.getVoltage() * DEGPERVOLT >= ARMROTATEMAXANGLE))
+                || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())){
+                armMotor.setPower(0);
             } else {
                 armMotor.setPower(gamepad2.left_stick_y);
             }
-            telemetry.addData("button", armuptouch.isPressed());
+            packet.put("arm max", armMotor.getCurrentPosition());
+            packet.put("arm up touch", armuptouch.isPressed());
+            packet.put("zero", armrotate0);
+            packet.put("armvolt", armpot.getVoltage());
+            packet.put("stringpot", stringpot.getVoltage());
 
+            if (armuptouch.isPressed()){
+                armrotate0 = armMotor.getCurrentPosition();
+            }
 
             if (cur2.a && !previousGamepad2.a) {
                 if (!grabberOpen) {
@@ -144,15 +151,15 @@ public class FieldCentric extends LinearOpMode {
             telemetry.update();
 
 
-            double y = gamepad1.left_stick_y; // Remember, this is reversed!
-            double x = -gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
-            double rx = -gamepad1.right_stick_x;
+            double y = -gamepad1.left_stick_y; // Remember, this is reversed!
+            double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
+            double rx = gamepad1.right_stick_x;
 
             // Read inverse IMU heading, as the IMU heading is CW positive
-            double botHeading = -imu.getAngularOrientation().firstAngle - zeroAngle;
+            double botHeading = imu.getAngularOrientation().firstAngle - zeroAngle;
 
             if (gamepad1.y) {
-                zeroAngle = -imu.getAngularOrientation().firstAngle;
+                zeroAngle = imu.getAngularOrientation().firstAngle;
             }
 
 
@@ -165,7 +172,8 @@ public class FieldCentric extends LinearOpMode {
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio, but only when
             // at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+
             double frontLeftPower = (rotY + rotX - rx) / denominator;
             double backLeftPower = (rotY - rotX - rx) / denominator;
             double frontRightPower = (rotY - rotX + rx) / denominator;
@@ -181,10 +189,10 @@ public class FieldCentric extends LinearOpMode {
                 speedMod += 0.1;
             }
 
-            if (frontRightPower > 1){
+            if (speedMod > 1){
                 speedMod = 1;
             }
-            else if (frontRightPower <= 0.3){
+            else if (speedMod <= 0.3){
                 speedMod = 0.3;
             }
 
@@ -194,10 +202,14 @@ public class FieldCentric extends LinearOpMode {
             backRight.setPower(backRightPower * speedMod);   //right
             backLeft.setPower(backLeftPower * speedMod);   //back
 
-            packet.put("front right", frontRightPower);
-            packet.put("front left", frontLeftPower);
-            packet.put("back right", backRightPower);
-            packet.put("back left", backLeftPower);
+
+            packet.put("zer", Math.toDegrees(zeroAngle));
+            packet.put("imu", Math.toDegrees(imu.getAngularOrientation().firstAngle));
+
+            packet.put("front right mod", frontRightPower * speedMod);
+            packet.put("front left mod", frontLeftPower * speedMod);
+            packet.put("back right mod", backRightPower * speedMod);
+            packet.put("back left mod", backLeftPower * speedMod);
             dashboard.sendTelemetryPacket(packet);
 
             try {
