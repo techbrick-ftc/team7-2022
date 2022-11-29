@@ -22,8 +22,6 @@ public class SimpleAuto extends StarterAuto {
     TelemetryPacket packet = new TelemetryPacket();
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
-
-
     @Override
     public void runOpMode() {
         initialize();
@@ -31,7 +29,6 @@ public class SimpleAuto extends StarterAuto {
         packet.addLine("id before");
         dashboard.sendTelemetryPacket(packet);
 
-        final double TICKSPERBLOCK = 805;
             // 400 per foot
 
         packet.put("angle", imu.getAngularOrientation().firstAngle);

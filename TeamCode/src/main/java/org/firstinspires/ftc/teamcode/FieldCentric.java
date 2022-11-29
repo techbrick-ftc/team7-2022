@@ -27,8 +27,6 @@ public class FieldCentric extends StarterAuto{
 
         final double DEGPERVOLT = 81.8;
         final double ARMROTATEMAXANGLE = 200.4;
-        final double VOLTSSTRINGDOWN = 1.875;
-        final double VOLTSSTRINGUP = 0.437;
         int armrotate0 = 0;
         final int ARMROTATEMAXTICKS = 4729;
 
@@ -42,17 +40,6 @@ public class FieldCentric extends StarterAuto{
 
         boolean grabberOpen = false;
 
-
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        // Retrieve the IMU from the hardware map
-        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        // Technically this is the default, however specifying it is clearer
-        parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
-        // Without this, data retrieving from the IMU throws an exception
-        imu.initialize(parameters);
 
         waitForStart();
 
@@ -88,6 +75,15 @@ public class FieldCentric extends StarterAuto{
                 }
             }
 
+            if (gamepad2.back){
+                while(opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN){
+                    stringMotor.setPower(0.5);
+                }
+
+                while(opModeIsActive() && !armuptouch.isPressed()){
+                    armMotor.setPower(0.5);
+                }
+            }
 
 
             if ((gamepad2.left_stick_y < 0 && (armrotate0 - armMotor.getCurrentPosition()  >= ARMROTATEMAXTICKS || armpot.getVoltage() * DEGPERVOLT >= ARMROTATEMAXANGLE))
@@ -172,7 +168,7 @@ public class FieldCentric extends StarterAuto{
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio, but only when
             // at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 0.5);
 
             double frontLeftPower = (rotY + rotX - rx) / denominator;
             double backLeftPower = (rotY - rotX - rx) / denominator;

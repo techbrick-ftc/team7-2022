@@ -107,6 +107,8 @@ public class StarterAuto extends LinearOpMode {
     public DcMotor stringMotor;
     final double VOLTSPERTRIP = 1.438;
     final double VOLTSSTRINGUP = 0.437;
+    final double VOLTSSTRINGDOWN = 1.9;
+    final double TICKSPERBLOCK = 805;   // 400 per foot
 
     void drivingCorrectionStraight(double startAngle2, double power) {
 
@@ -153,8 +155,7 @@ public class StarterAuto extends LinearOpMode {
     boolean tapeSensor45(boolean red) {
         if (red && colorFL.red() > 400 && colorBR.red() > 1000) {
             return false;
-        }
-       else if (!red && colorFR.blue() > 400 && colorBL.blue() > 1000) {
+        } else if (!red && colorFR.blue() > 400 && colorBL.blue() > 1000) {
             return false;
         } else {
             return true;
@@ -163,18 +164,15 @@ public class StarterAuto extends LinearOpMode {
 
     boolean tapeSensor90(boolean red) {
 
-        if (red && colorFL.red() > 400 && colorFR.red() > 400){
+        if (red && colorFL.red() > 400 && colorFR.red() > 400) {
             return false;
-        }
-        else if (!red && colorFL.blue() > 400 && colorFR.blue() > 400){
+        } else if (!red && colorFL.blue() > 400 && colorFR.blue() > 400) {
             return false;
-        }
-        else{
+        } else {
             return true;
         }
 
     }
-
 
 
     void initAprilTags() {
@@ -207,50 +205,43 @@ public class StarterAuto extends LinearOpMode {
         double time = getRuntime();
 
 
-        while (opModeIsActive() && numofTimesSeen < 10 && (getRuntime() - time) < timeOut ){
+        while (opModeIsActive() && numofTimesSeen < 10 && (getRuntime() - time) < timeOut) {
             TelemetryPacket packet = new TelemetryPacket();
-            packet.put("lastIDSeen " , lastIDSeen);
+            packet.put("lastIDSeen ", lastIDSeen);
             packet.put("numofTimesSeen", numofTimesSeen);
 
             // If there's been a new frame...
-            if(detections != null)
-            {
+            if (detections != null) {
                 // If we don't see any tags
-                if(detections.size() == 0)
-                {
+                if (detections.size() == 0) {
                     packet.addLine("detection size = 0");
                     numofTimesSeen = 0;
                     lastIDSeen = 0;
                     // If we haven't seen a tag for a few frames, lower the decimation
                     // so we can hopefully pick one up if we're e.g. far back
-                    if(numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION)
-                    {
+                    if (numFramesWithoutDetection >= THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION) {
                         aprilTagDetectionPipeline.setDecimation(DECIMATION_LOW);
                     }
                 }
                 // We do see tags!
-                else
-                {
+                else {
                     packet.put("id", detections.get(0).id);
 
                     if (lastIDSeen != detections.get(0).id) {
                         lastIDSeen = detections.get(0).id;
                         numofTimesSeen = 1;
-                    }
-                    else {
-                        numofTimesSeen ++;
+                    } else {
+                        numofTimesSeen++;
                     }
 
-                    if(detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS)
-                    {
+                    if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) {
                         aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
                     }
 
                 }
 
                 telemetry.update();
-            }
-            else {
+            } else {
                 lastIDSeen = 0;
                 numofTimesSeen = 0;
                 packet.addLine("packet not seen");
@@ -262,7 +253,6 @@ public class StarterAuto extends LinearOpMode {
 
         return lastIDSeen;
     }
-
 
 
     private double wrap(double theta) {
@@ -283,7 +273,7 @@ public class StarterAuto extends LinearOpMode {
 
     }
 
-    void initialize(){
+    void initialize() {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
@@ -304,8 +294,11 @@ public class StarterAuto extends LinearOpMode {
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        stringMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         imu.initialize(params);
@@ -313,38 +306,49 @@ public class StarterAuto extends LinearOpMode {
     }
 // picking up = arm pot bigger
 
-    void armpotTurn(double angle){
-        double targVolt = angle/81.8;
+    void armpotTurn(double angle) {
+        double targVolt = angle / 81.8;
 
-        while(opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
+        while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.put("volt", armpot.getVoltage());
+            dashboard.sendTelemetryPacket(packet);
             double power = Math.signum(armpot.getVoltage() - targVolt);
 
-            if (Math.abs(armpot.getVoltage() - targVolt) < .05){
+            if (Math.abs(armpot.getVoltage() - targVolt) < .05) {
                 power *= 0.3;
-            }
-            else if (Math.abs(armpot.getVoltage() - targVolt) < .1){
+            } else if (Math.abs(armpot.getVoltage() - targVolt) < .1) {
                 power *= 0.5;
             }
             armMotor.setPower(power);
         }
+        armMotor.setPower(0);
     }
 
-    void stringpotTurn(double percentoftrip){
+    void stringpotTurn(double targetVolt) {
 
-        double targetVolt = percentoftrip * VOLTSPERTRIP + VOLTSSTRINGUP;
-
-        while(opModeIsActive() && Math.abs(stringpot.getVoltage() - targetVolt) >= 0.01){
+        while (opModeIsActive() && Math.abs(stringpot.getVoltage() - targetVolt) >= 0.01) {
             double power = Math.signum(stringpot.getVoltage() - targetVolt);
 
-            if (Math.abs(stringpot.getVoltage() - targetVolt) < .05){
+            if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
                 power *= 0.3;
-            }
-            else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1){
+            } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
                 power *= 0.5;
             }
             stringMotor.setPower(power);
         }
+        stringMotor.setPower(0);
     }
+
+    void returnHome() {
+        while (opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN) {
+            stringMotor.setPower(0.25);
+        }
+        while (opModeIsActive() && !armuptouch.isPressed()) {
+            armMotor.setPower(0.25);
+        }
+    }
+
 
     void turnRobot(double angle, boolean clockwise) {
         double directionalSpeed = clockwise ? 1 : -1;
