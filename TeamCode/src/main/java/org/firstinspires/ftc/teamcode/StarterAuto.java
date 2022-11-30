@@ -105,9 +105,9 @@ public class StarterAuto extends LinearOpMode {
     public AnalogInput armpot;
     public DcMotor armMotor;
     public DcMotor stringMotor;
-    final double VOLTSPERTRIP = 1.438;
-    final double VOLTSSTRINGUP = 0.437;
-    final double VOLTSSTRINGDOWN = 1.9;
+    final double VOLTSPERTRIP = 1.438; //may need to change
+    final double VOLTSSTRINGUP = 0;
+    final double VOLTSSTRINGDOWN = 1.439;
     final double TICKSPERBLOCK = 805;   // 400 per foot
 
     void drivingCorrectionStraight(double startAngle2, double power) {
