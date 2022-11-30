@@ -23,7 +23,7 @@ public class FieldCentric extends StarterAuto{
         TelemetryPacket packet = new TelemetryPacket();
         initialize();
         double zeroAngle = 0;
-        double speedMod = 1;
+        double speedMod = 0.75;
 
         final double DEGPERVOLT = 81.8;
         final double ARMROTATEMAXANGLE = 200.4;
@@ -113,6 +113,14 @@ public class FieldCentric extends StarterAuto{
                 }
             }
 
+            if (gamepad1.right_bumper){
+                speedMod = 1;
+            }
+
+            if (gamepad1.left_bumper){
+                speedMod = 0.5;
+            }
+
 
             if (cur2.dpad_right && !previousGamepad2.dpad_right){
                 position1 += 0.10;
@@ -168,7 +176,7 @@ public class FieldCentric extends StarterAuto{
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio, but only when
             // at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 0.5);
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
 
             double frontLeftPower = (rotY + rotX - rx) / denominator;
             double backLeftPower = (rotY - rotX - rx) / denominator;
