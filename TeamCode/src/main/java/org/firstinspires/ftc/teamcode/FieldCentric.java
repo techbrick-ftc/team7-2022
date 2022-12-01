@@ -56,23 +56,17 @@ public class FieldCentric extends StarterAuto{
             }
 
 
-            if (gamepad2.right_trigger != 0) {
-               if (stringMotor.getCurrentPosition() < -3500 || stringpot.getVoltage() <= VOLTSSTRINGUP) {
-                    stringMotor.setPower(0);
-                 } else {
-                    stringMotor.setPower(-gamepad2.right_trigger);
-                }
+           if (stringMotor.getCurrentPosition() < -3500 || stringpot.getVoltage() <= VOLTSSTRINGUP) {
+                stringMotor.setPower(0);
+             } else {
+                stringMotor.setPower(-gamepad2.right_trigger);
             }
             packet.put("string encoder", stringMotor.getCurrentPosition());
 
-            dashboard.sendTelemetryPacket(packet);
-
-            if (gamepad2.left_trigger != 0) {
-                if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
-                    stringMotor.setPower(0);
-                } else {
-                    stringMotor.setPower(gamepad2.left_trigger);
-                }
+            if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
+                stringMotor.setPower(0);
+            } else {
+                stringMotor.setPower(gamepad2.left_trigger);
             }
 
             if (gamepad2.back){
@@ -90,7 +84,7 @@ public class FieldCentric extends StarterAuto{
                 || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())){
                 armMotor.setPower(0);
             } else {
-                armMotor.setPower(gamepad2.left_stick_y);
+                armMotor.setPower(gamepad2.left_stick_y*0.7);
             }
             packet.put("arm max", armMotor.getCurrentPosition());
             packet.put("arm up touch", armuptouch.isPressed());
@@ -104,11 +98,11 @@ public class FieldCentric extends StarterAuto{
 
             if (cur2.a && !previousGamepad2.a) {
                 if (!grabberOpen) {
-                    grabbaServo.setPosition(1);
+                    grabbaServo.setPosition(0.5);
                     grabberOpen = true;
                 }
                 else {
-                    grabbaServo.setPosition(0);
+                    grabbaServo.setPosition(1);
                     grabberOpen = false;
                 }
             }
