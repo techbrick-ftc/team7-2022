@@ -13,22 +13,30 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
 
-public class FieldCentric extends StarterAuto{
+public class FieldCentric extends StarterAuto {
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
+
     @Override
-    public void runOpMode()  {
+    public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
         initialize();
         double zeroAngle = 0;
-        double speedMod = 0.75;
+        boolean speedMod = true;
 
         final double DEGPERVOLT = 81.8;
-        final double ARMROTATEMAXANGLE = 200.4;
+        final double ARMROTATEMAXVOLT = 2.17;
         int armrotate0 = 0;
         final int ARMROTATEMAXTICKS = 4729;
+
+        boolean fieldCentric = true;
+
+        double rotX = 0;
+        double rotY = 0;
+        double rx = 0;
 
         double position1 = 0;
         Gamepad previousGamepad2 = new Gamepad();
@@ -51,46 +59,38 @@ public class FieldCentric extends StarterAuto{
 
             try {
                 cur2.copy(gamepad2);
+                cur1.copy(gamepad1);
             } catch (RobotCoreException e) {
 
             }
 
-
-            if (gamepad2.right_trigger != 0) {
-               if (stringMotor.getCurrentPosition() < -3500 || stringpot.getVoltage() <= VOLTSSTRINGUP) {
+            if (gamepad2.right_trigger > 0) {
+                if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
                     stringMotor.setPower(0);
-                 } else {
+                } else {
                     stringMotor.setPower(-gamepad2.right_trigger);
                 }
-            }
-            packet.put("string encoder", stringMotor.getCurrentPosition());
-
-            dashboard.sendTelemetryPacket(packet);
-
-            if (gamepad2.left_trigger != 0) {
+            } else if (gamepad2.left_trigger > 0) {
                 if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
                     stringMotor.setPower(0);
                 } else {
                     stringMotor.setPower(gamepad2.left_trigger);
                 }
-            }
-
-            if (gamepad2.back){
-                while(opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN){
-                    stringMotor.setPower(0.5);
-                }
-
-                while(opModeIsActive() && !armuptouch.isPressed()){
-                    armMotor.setPower(0.5);
-                }
+            } else {
+                stringMotor.setPower(0);
             }
 
 
-            if ((gamepad2.left_stick_y < 0 && (armrotate0 - armMotor.getCurrentPosition()  >= ARMROTATEMAXTICKS || armpot.getVoltage() * DEGPERVOLT >= ARMROTATEMAXANGLE))
-                || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())){
+            if (cur2.back && !previousGamepad2.back) {
+                returnHome();
+            }
+
+
+            if ((gamepad2.left_stick_y < 0 && armpot.getVoltage() >= ARMROTATEMAXVOLT)
+                    || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())) {
                 armMotor.setPower(0);
             } else {
-                armMotor.setPower(gamepad2.left_stick_y);
+                armMotor.setPower(gamepad2.left_stick_y * 0.7);
             }
             packet.put("arm max", armMotor.getCurrentPosition());
             packet.put("arm up touch", armuptouch.isPressed());
@@ -98,77 +98,95 @@ public class FieldCentric extends StarterAuto{
             packet.put("armvolt", armpot.getVoltage());
             packet.put("stringpot", stringpot.getVoltage());
 
-            if (armuptouch.isPressed()){
+
+            if (armuptouch.isPressed()) {
                 armrotate0 = armMotor.getCurrentPosition();
             }
 
             if (cur2.a && !previousGamepad2.a) {
                 if (!grabberOpen) {
-                    grabbaServo.setPosition(1);
+                    grabbaServo.setPosition(0.5);
                     grabberOpen = true;
-                }
-                else {
-                    grabbaServo.setPosition(0);
+                } else {
+                    grabbaServo.setPosition(1);
                     grabberOpen = false;
                 }
             }
 
-            if (gamepad1.right_bumper){
-                speedMod = 1;
-            }
 
-            if (gamepad1.left_bumper){
-                speedMod = 0.5;
-            }
-
-
-            if (cur2.dpad_right && !previousGamepad2.dpad_right){
+            if (cur2.dpad_right && !previousGamepad2.dpad_right) {
                 position1 += 0.10;
 
             }
-            if (cur2.dpad_left && !previousGamepad2.dpad_left){
+            if (cur2.dpad_left && !previousGamepad2.dpad_left) {
                 position1 -= 0.10;
 
             }
 
-            if (cur2.dpad_up && !previousGamepad2.dpad_up){
+            if (cur2.right_stick_y < -0.95) {
                 position1 = 1;
 
             }
 
-            if (cur2.dpad_down && !previousGamepad2.dpad_down){
+            if (cur2.right_stick_y > 0.95) {
                 position1 = 0;
             }
 
-            if (position1 > 1){
+            if (position1 > 1) {
                 position1 = 1;
-            }
-           else if (position1 < 0){
+            } else if (position1 < 0) {
                 position1 = 0;
             }
             wristServo.setPosition(position1);
 
+            if (cur1.right_bumper && !previousGamepad1.right_bumper){
+                speedMod = true;
+            }
+            else if (cur1.left_bumper && !previousGamepad1.left_bumper){
+                speedMod = false;
+            }
 
             telemetry.addData("position", wristServo.getPosition());
             telemetry.addData("end", position1);
+            telemetry.addData("speedMod", speedMod);
 
             telemetry.update();
 
 
             double y = -gamepad1.left_stick_y; // Remember, this is reversed!
-            double x = gamepad1.left_stick_x * 1.1; // Counteract imperfect strafing
-            double rx = gamepad1.right_stick_x;
+            double x = gamepad1.left_stick_x; // Counteract imperfect strafing
+            rx = gamepad1.right_stick_x;
+
+            if (!speedMod) {
+                y = Range.clip(-gamepad1.left_stick_y, -0.55, 0.55);
+                x = Range.clip(gamepad1.left_stick_x, -0.5, 0.5);
+                rx = Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
+            } else {
+                y = Range.clip(-gamepad1.left_stick_y, -0.95, 0.95);
+                rx = Range.clip(gamepad1.right_stick_x, -0.75, 0.75);
+
+            }
 
             // Read inverse IMU heading, as the IMU heading is CW positive
-            double botHeading = imu.getAngularOrientation().firstAngle - zeroAngle;
+            double botHeading = -(imu.getAngularOrientation().firstAngle - zeroAngle);
+
 
             if (gamepad1.y) {
                 zeroAngle = imu.getAngularOrientation().firstAngle;
             }
+            if (cur1.b && !previousGamepad1.b) {
+                fieldCentric = !fieldCentric;
+            }
 
+            if (fieldCentric) {
+                rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
+                rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
+            } else {
 
-            double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
-            double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
+                rotX = x;
+                rotY = y;
+            }
+
 
             packet.put("rotatex", rotX);
             packet.put("rotatey", rotY);
@@ -178,45 +196,30 @@ public class FieldCentric extends StarterAuto{
             // at least one is out of the range [-1, 1]
             double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
 
-            double frontLeftPower = (rotY + rotX - rx) / denominator;
-            double backLeftPower = (rotY - rotX - rx) / denominator;
-            double frontRightPower = (rotY - rotX + rx) / denominator;
-            double backRightPower = (rotY + rotX + rx) / denominator;
+//            double frontLeftPower = (rotY + rotX - rx) / denominator;
+//            double backLeftPower = (rotY - rotX - rx) / denominator;
+//            double frontRightPower = (rotY - rotX + rx) / denominator;
+//            double backRightPower = (rotY + rotX + rx) / denominator;
+
+            double frontLeftPower = (rotY + rotX - rx);
+            double backLeftPower = (rotY - rotX - rx);
+            double frontRightPower = (rotY - rotX + rx);
+            double backRightPower = (rotY + rotX + rx);
 
 
-
-            if (cur1.x && !previousGamepad1.x){
-                speedMod -= 0.1;
-            }
-
-            if (cur1.b && !previousGamepad1.b){
-                speedMod += 0.1;
-            }
-
-            if (speedMod > 1){
-                speedMod = 1;
-            }
-            else if (speedMod <= 0.3){
-                speedMod = 0.3;
-            }
-
-
-            frontRight.setPower(frontRightPower * speedMod);  //front
-            frontLeft.setPower(frontLeftPower * speedMod);    //left
-            backRight.setPower(backRightPower * speedMod);   //right
-            backLeft.setPower(backLeftPower * speedMod);   //back
+            frontRight.setPower(frontRightPower);  //front
+            frontLeft.setPower(frontLeftPower);    //left
+            backRight.setPower(backRightPower);   //right
+            backLeft.setPower(backLeftPower);   //back
 
 
             packet.put("zer", Math.toDegrees(zeroAngle));
             packet.put("imu", Math.toDegrees(imu.getAngularOrientation().firstAngle));
 
-            packet.put("front right mod", frontRightPower * speedMod);
-            packet.put("front left mod", frontLeftPower * speedMod);
-            packet.put("back right mod", backRightPower * speedMod);
-            packet.put("back left mod", backLeftPower * speedMod);
             dashboard.sendTelemetryPacket(packet);
 
             try {
+                previousGamepad1.copy(cur1);
                 previousGamepad2.copy(cur2);
             } catch (RobotCoreException e) {
 

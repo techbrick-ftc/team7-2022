@@ -32,8 +32,8 @@ Expansion Hub:
 
 
 
- Motor Port 0: armMotor
- Motor Port 2: stringMotor
+ Motor Port 1: armMotor
+ Motor Port 0: stringMotor
 
  Control Hub:
   Motor Port 0: frontRight
@@ -106,8 +106,8 @@ public class StarterAuto extends LinearOpMode {
     public DcMotor armMotor;
     public DcMotor stringMotor;
     final double VOLTSPERTRIP = 1.438; //may need to change
-    final double VOLTSSTRINGUP = 0;
-    final double VOLTSSTRINGDOWN = 1.439;
+    final double VOLTSSTRINGUP = 0.05;
+    final double VOLTSSTRINGDOWN = 1.454;
     final double TICKSPERBLOCK = 805;   // 400 per foot
 
     void drivingCorrectionStraight(double startAngle2, double power) {
@@ -279,14 +279,20 @@ public class StarterAuto extends LinearOpMode {
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
         colorFR = hardwareMap.colorSensor.get("colorFR");
-        colorFL = hardwareMap.colorSensor.get("colorFL");
-        colorBR = hardwareMap.colorSensor.get("colorBR");
+
+       colorFL = hardwareMap.colorSensor.get("colorFL");
+       colorBR = hardwareMap.colorSensor.get("colorBR");
         colorBL = hardwareMap.colorSensor.get("colorBL");
+
+
         grabbaServo = hardwareMap.servo.get("grabbaServo");
-        armuptouch = hardwareMap.touchSensor.get("armuptouch");
-        armMotor = hardwareMap.get(DcMotor.class, "armMotor");
-        stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
+       armuptouch = hardwareMap.touchSensor.get("armuptouch");
         wristServo = hardwareMap.servo.get("wristServo");
+
+
+       stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
+        armMotor = hardwareMap.get(DcMotor.class, "armMotor");
+
         stringpot = hardwareMap.get(AnalogInput.class, "stringpot");
         armpot = hardwareMap.get(AnalogInput.class, "armpot");
         imu = hardwareMap.get(BNO055IMU.class, "imu");
