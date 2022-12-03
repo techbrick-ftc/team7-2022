@@ -111,6 +111,7 @@ public class StarterAuto extends LinearOpMode {
     final double VOLTSSTRINGDOWN = 1.454;
     final double TICKSPERBLOCK = 805;   // 400 per foot
     final double ARMROTATEMAXVOLT = 2.2;
+    final double ARMVOLTSMID = 1.05;
 
     void drivingCorrectionStraight(double startAngle2, double power) {
 
@@ -369,11 +370,11 @@ public class StarterAuto extends LinearOpMode {
 
     void returnHome() {
         while (opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN) {
-            stringMotor.setPower(0.25);
+            stringMotor.setPower(0.4);
         }
         stringMotor.setPower(0);
-        while (opModeIsActive() && !armuptouch.isPressed()) {
-            armMotor.setPower(0.25);
+        while (opModeIsActive() && armpot.getVoltage() >= ARMVOLTSMID) {
+            armMotor.setPower(0.4);
         }
         armMotor.setPower(0);
 
