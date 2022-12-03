@@ -94,20 +94,57 @@ public class FinalAuto extends StarterAuto {
             motorsStop();
         }
 
+
         // Go straight until in spot #2
-        else if (tag == 2){ 
-            while (opModeIsActive() && backRight.getCurrentPosition() - backrightpos < 0.6 * TICKSPERBLOCK){
+        else if (tag == 2){
+            telemetry.addLine("tag is 2!");
+
+
+            //Continue moving until robot is on tape
+            while (opModeIsActive() && (tapeSensor45(true) || tapeSensor45(false)) && (frontRight.getCurrentPosition() - frontpos < 5500)) {
+                drivingCorrectionLeft(startAngle, 0.5);
+
+            }
+
+            motorsStop();
+            sleep(1000);
+
+
+            drivingCorrectionStraight(startAngle, 0.5);
+
+
+            startTime = getRuntime();
+            //Continue moving until robot is on tape and make sure robot has moved for at least 1 second
+            // this is so robot is for sure off the tape
+            int leftpos = frontLeft.getCurrentPosition();
+
+            while (opModeIsActive() && ((tapeSensor90(true) || tapeSensor90(false)) && frontLeft.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 ) {
                 drivingCorrectionStraight(startAngle, 0.5);
             }
+
             motorsStop();
+            sleep(1000);
+
+            drivingCorrectionLeft(startAngle, -0.5);
+            sleep(1000);
+
+        }
+        else if (tag == 3){
+
+            while(opModeIsActive() && (colorBR.red() < 600 || colorBR.blue() < 400)){
+                drivingCorrectionLeft(startAngle, -0.5);
+            }
+            motorsStop();
+            sleep(1000);
+
+
+            while(opModeIsActive() && backRight.getCurrentPosition() < 1.5 * TICKSPERBLOCK){
+                drivingCorrectionStraight(startAngle, 0.5);
+            }
+
+            motorsStop();
+            sleep(1000);
         }
 
-        // Go straight until in spot #3
-        else if (tag == 3){
-            while (opModeIsActive() && backRight.getCurrentPosition() - backrightpos < 1.7 * TICKSPERBLOCK){
-                drivingCorrectionStraight(startAngle, 0.5);
-            }
-            motorsStop();
-        }
     }
 }

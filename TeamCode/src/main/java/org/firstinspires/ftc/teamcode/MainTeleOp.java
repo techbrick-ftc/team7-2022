@@ -98,7 +98,7 @@ public class MainTeleOp extends StarterAuto {
 
             if (cur2.a && !previousGamepad2.a) {
                 if (!grabberOpen) {
-                    grabbaServo.setPosition(0.5);
+                    grabbaServo.setPosition(0.3);
                     grabberOpen = true;
                 } else {
                     grabbaServo.setPosition(1);

@@ -110,9 +110,10 @@ public class StarterAuto extends LinearOpMode {
     final double VOLTSSTRINGUP = 0.069;
     final double VOLTSSTRINGDOWN = 1.454;
     final double TICKSPERBLOCK = 805;   // 400 per foot
-    final double ARMROTATEMAXVOLT = 2.05;
+    final double ARMROTATEMAXVOLT = 2.2;
 
     void drivingCorrectionStraight(double startAngle2, double power) {
+
 
         TelemetryPacket packet = new TelemetryPacket();
 
@@ -314,7 +315,7 @@ public class StarterAuto extends LinearOpMode {
     }
 // picking up = arm pot bigger
 // negative power to pick up - ARM
-
+// SPEED ALWAYS POSITIVE
     void armpotTurn(double targVolt) {
         telemetry.addData("armturn", armpot.getVoltage());
         telemetry.update();
@@ -324,16 +325,18 @@ public class StarterAuto extends LinearOpMode {
             dashboard.sendTelemetryPacket(packet);
             double power = Math.signum(armpot.getVoltage() - targVolt);
 
+
             if (power == 1 && (armuptouch.isPressed())) {
                 break;
             } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
                 break;
             } else {
-            if (Math.abs(armpot.getVoltage() - targVolt) < .05) {
+            if (Math.abs(armpot.getVoltage() - targVolt) < .5) {
+                power *= 0.4;
+            } else if (Math.abs(armpot.getVoltage() - targVolt) < 1) {
                 power *= 0.5;
-            } else if (Math.abs(armpot.getVoltage() - targVolt) < .1) {
-                power *= 0.6;
             }
+            power = Range.clip(power, -0.7, 0.7);
             armMotor.setPower(power);
         }
         }
@@ -374,14 +377,12 @@ public class StarterAuto extends LinearOpMode {
         }
         armMotor.setPower(0);
 
-        wristServo.setPosition(1);
-
 
     }
 
     void stringHome() {
         while (opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN) {
-            stringMotor.setPower(0.25);
+            stringMotor.setPower(0.50);
         }
         stringMotor.setPower(0);
     }
@@ -399,7 +400,7 @@ public class StarterAuto extends LinearOpMode {
 
         wristServo.setPosition(0);
 
-        stringpotTurn(0.245);
+        stringpotTurn(0.368);
         sleep(200);
 
 
@@ -412,7 +413,7 @@ public class StarterAuto extends LinearOpMode {
         armpotTurn(1.550);
         sleep(200);
 
-        stringHome();
+        returnHome();
         sleep(100);
 
     }
