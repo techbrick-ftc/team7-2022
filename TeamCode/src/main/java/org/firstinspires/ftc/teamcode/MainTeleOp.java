@@ -20,7 +20,7 @@ public class MainTeleOp extends StarterAuto {
         boolean speedMod = true;
 
         final double DEGPERVOLT = 81.8;
-        final double ARMROTATEMAXVOLT = 2.17;
+
         int armrotate0 = 0;
         final int ARMROTATEMAXTICKS = 4729;
 
@@ -30,7 +30,7 @@ public class MainTeleOp extends StarterAuto {
         double rotY = 0;
         double rx = 0;
 
-        double position1 = 1;
+        double position1 = 0;
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad previousGamepad1 = new Gamepad();
 
@@ -38,7 +38,7 @@ public class MainTeleOp extends StarterAuto {
         Gamepad cur1 = new Gamepad();
 
 
-        boolean grabberOpen = false;
+        boolean grabberOpen = true;
 
 
         waitForStart();
@@ -56,6 +56,7 @@ public class MainTeleOp extends StarterAuto {
 
             }
 
+            // right trigger extends, extending is -1  power
             if (gamepad2.right_trigger > 0) {
                 if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
                     stringMotor.setPower(0);

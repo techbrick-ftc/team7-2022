@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.dashboard.FtcDashboard;
 
 @Autonomous
-public class AutoScoreRed extends StarterAuto {
+public class AutoScoreLeft extends StarterAuto {
     TelemetryPacket packet = new TelemetryPacket();
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -21,33 +21,34 @@ public class AutoScoreRed extends StarterAuto {
         waitForStart();
         int tag = getAprilTag(5);
 
-        armpotTurn(1.648);
-        sleep(200);
+        telemetry.addData("got tag", tag);
+        telemetry.update();
 
-        stringpotTurn(0.308);
-        sleep(200);
+        scoreLeft();
 
-   //     armpotTurn();
-        sleep(200);
+        // reposition to straight against wall
+        frontRight.setPower(0.50);
+        backRight.setPower(0.50);
+        sleep(1000);
 
-        grabbaServo.setPosition(0.5);
+        motorsStop();
 
+       frontLeft.setPower(0.5);
+       backRight.setPower(0.5);
+       frontRight.setPower(0.5);
+       backLeft.setPower(0.5);
+       sleep(1000);
+       motorsStop();
+        // reposition
 
-        stringHome();
-        sleep(200);
-
-
-
-
-
-
+        sleep(1000);
 
         if (tag == 1){
 
 
             int frontpos = frontRight.getCurrentPosition();
             //Continue moving until robot is on tape
-            while (opModeIsActive() && tapeSensor45(true) && frontRight.getCurrentPosition() - frontpos < 5500) {
+            while (opModeIsActive() && (tapeSensor45(true) || tapeSensor45(false)) && frontRight.getCurrentPosition() - frontpos < 5500) {
                 drivingCorrectionLeft(startAngle, 0.5);
 
             }
@@ -73,7 +74,7 @@ public class AutoScoreRed extends StarterAuto {
             // this is so robot is for sure off the tape
             int leftpos = frontLeft.getCurrentPosition();
 
-            while (opModeIsActive() && ((tapeSensor90(true) && frontLeft.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 )) {
+            while (opModeIsActive() && (((tapeSensor90(true) || tapeSensor90(false)) && frontLeft.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 )) {
                 drivingCorrectionStraight(startAngle, 0.5);
             }
 
@@ -87,7 +88,7 @@ public class AutoScoreRed extends StarterAuto {
 
             int frontpos = frontRight.getCurrentPosition();
             //Continue moving until robot is on tape
-            while (opModeIsActive() && tapeSensor45(true) && (frontRight.getCurrentPosition() - frontpos < 5500)) {
+            while (opModeIsActive() && (tapeSensor45(true) || tapeSensor45(false)) && (frontRight.getCurrentPosition() - frontpos < 5500)) {
                 drivingCorrectionLeft(startAngle, 0.5);
 
             }
@@ -104,7 +105,7 @@ public class AutoScoreRed extends StarterAuto {
             // this is so robot is for sure off the tape
             int leftpos = frontLeft.getCurrentPosition();
 
-            while (opModeIsActive() && ((tapeSensor90(true) && frontLeft.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 )) {
+            while (opModeIsActive() && ((tapeSensor90(true) || tapeSensor90(false)) && frontLeft.getCurrentPosition() - leftpos < 4500) || getRuntime() - startTime < 1 ) {
                 drivingCorrectionStraight(startAngle, 0.5);
             }
 
@@ -117,7 +118,7 @@ public class AutoScoreRed extends StarterAuto {
         }
         else if (tag == 3){
 
-            while(opModeIsActive() && colorBR.red() < 1000){
+            while(opModeIsActive() && (colorBR.red() < 600 || colorBR.blue() < 400)){
                 drivingCorrectionLeft(startAngle, -0.5);
             }
             motorsStop();

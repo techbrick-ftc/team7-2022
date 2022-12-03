@@ -12,6 +12,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.apriltag.AprilTagDetection;
@@ -23,10 +24,10 @@ import java.util.ArrayList;
 /*
 Configurations:
 Expansion Hub:
- I2C Port 0: colorFR     aka color1
- I2C Port 1: colorFL
- I2C Port 2: colorBL
- I2C Port 3: colorBR
+ I2C Port 0: colorBL     aka color1
+ I2C Port 1: colorBR
+ I2C Port 2: colorFR
+ I2C Port 3: colorFL
 
  Servo Port 0:wristServo
 
@@ -106,9 +107,10 @@ public class StarterAuto extends LinearOpMode {
     public DcMotor armMotor;
     public DcMotor stringMotor;
     final double VOLTSPERTRIP = 1.438; //may need to change
-    final double VOLTSSTRINGUP = 0.05;
+    final double VOLTSSTRINGUP = 0.069;
     final double VOLTSSTRINGDOWN = 1.454;
     final double TICKSPERBLOCK = 805;   // 400 per foot
+    final double ARMROTATEMAXVOLT = 2.05;
 
     void drivingCorrectionStraight(double startAngle2, double power) {
 
@@ -153,9 +155,9 @@ public class StarterAuto extends LinearOpMode {
     }
 
     boolean tapeSensor45(boolean red) {
-        if (red && colorFL.red() > 400 && colorBR.red() > 1000) {
+        if (red && colorFL.red() > 1500 && colorBR.red() > 500) {
             return false;
-        } else if (!red && colorFR.blue() > 400 && colorBL.blue() > 1000) {
+        } else if (!red && colorFR.blue() > 2000 && colorBL.blue() > 500) {
             return false;
         } else {
             return true;
@@ -164,9 +166,9 @@ public class StarterAuto extends LinearOpMode {
 
     boolean tapeSensor90(boolean red) {
 
-        if (red && colorFL.red() > 400 && colorFR.red() > 400) {
+        if (red && colorFL.red() > 1500 && colorFR.red() > 3000) {
             return false;
-        } else if (!red && colorFL.blue() > 400 && colorFR.blue() > 400) {
+        } else if (!red && colorFL.blue() > 2000 && colorFR.blue() > 2500) {
             return false;
         } else {
             return true;
@@ -311,36 +313,53 @@ public class StarterAuto extends LinearOpMode {
 
     }
 // picking up = arm pot bigger
+// negative power to pick up - ARM
 
     void armpotTurn(double targVolt) {
-
+        telemetry.addData("armturn", armpot.getVoltage());
+        telemetry.update();
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
             TelemetryPacket packet = new TelemetryPacket();
             packet.put("volt", armpot.getVoltage());
             dashboard.sendTelemetryPacket(packet);
             double power = Math.signum(armpot.getVoltage() - targVolt);
 
+            if (power == 1 && (armuptouch.isPressed())) {
+                break;
+            } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
+                break;
+            } else {
             if (Math.abs(armpot.getVoltage() - targVolt) < .05) {
-                power *= 0.3;
-            } else if (Math.abs(armpot.getVoltage() - targVolt) < .1) {
                 power *= 0.5;
+            } else if (Math.abs(armpot.getVoltage() - targVolt) < .1) {
+                power *= 0.6;
             }
             armMotor.setPower(power);
+        }
         }
         armMotor.setPower(0);
     }
 
+    //negative power to go out
     void stringpotTurn(double targetVolt) {
-
+        telemetry.addData("stringturn", stringpot.getVoltage());
+        telemetry.update();
         while (opModeIsActive() && Math.abs(stringpot.getVoltage() - targetVolt) >= 0.01) {
-            double power = Math.signum(stringpot.getVoltage() - targetVolt);
+            double power = Math.signum(targetVolt - stringpot.getVoltage());
 
-            if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
-                power *= 0.3;
-            } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
-                power *= 0.5;
+            if (power == -1 && (stringpot.getVoltage() <= VOLTSSTRINGUP)){
+                break;
             }
-            stringMotor.setPower(power);
+            else if (power == 1 && (stringpot.getVoltage() > VOLTSSTRINGDOWN)) {
+                break;
+            } else {
+                if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
+                    power *= 0.5;
+                } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
+                    power *= 0.6;
+                }
+                stringMotor.setPower(power);
+            }
         }
         stringMotor.setPower(0);
     }
@@ -368,6 +387,35 @@ public class StarterAuto extends LinearOpMode {
     }
 
 
+    void scoreLeft() {
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("volts", armpot.getVoltage());
+        dashboard.sendTelemetryPacket(packet);
+        // Turn arm to initial drop
+        armpotTurn(1.542);
+        sleep(100);
+
+        // Extend
+
+        wristServo.setPosition(0);
+
+        stringpotTurn(0.245);
+        sleep(200);
+
+
+        armpotTurn(1.7);
+        sleep(200);
+
+        grabbaServo.setPosition(0.5);
+        sleep(700);
+
+        armpotTurn(1.550);
+        sleep(200);
+
+        stringHome();
+        sleep(100);
+
+    }
 
 
     void turnRobot(double angle, boolean clockwise) {
@@ -378,10 +426,9 @@ public class StarterAuto extends LinearOpMode {
             telemetry.addData("angle", imu.getAngularOrientation().firstAngle);
             telemetry.update();
 
-            if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.05 * Math.PI){
+            if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.05 * Math.PI) {
                 directionalSpeed *= 0.3;
-            }
-           else if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.1 * Math.PI){
+            } else if (Math.abs(imu.getAngularOrientation().firstAngle - targetAngle) < 0.1 * Math.PI) {
                 directionalSpeed *= 0.5;
             }
 

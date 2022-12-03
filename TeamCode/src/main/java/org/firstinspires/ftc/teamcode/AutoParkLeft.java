@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.dashboard.FtcDashboard;
 
 @Autonomous
-public class AutoRedPark extends StarterAuto {
+public class AutoParkLeft extends StarterAuto {
     TelemetryPacket packet = new TelemetryPacket();
     FtcDashboard dashboard = FtcDashboard.getInstance();
 
@@ -16,7 +16,6 @@ public class AutoRedPark extends StarterAuto {
         packet.addLine("id before");
         dashboard.sendTelemetryPacket(packet);
 
-            // 400 per foot
 
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
