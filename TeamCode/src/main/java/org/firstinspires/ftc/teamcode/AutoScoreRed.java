@@ -2,44 +2,45 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.openftc.apriltag.AprilTagDetection;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
-import org.openftc.easyopencv.OpenCvInternalCamera2;
 
 @Autonomous
-public class SimpleAuto extends StarterAuto {
+public class AutoScoreRed extends StarterAuto {
     TelemetryPacket packet = new TelemetryPacket();
     FtcDashboard dashboard = FtcDashboard.getInstance();
+
 
     @Override
     public void runOpMode() {
         initialize();
         initAprilTags();
-        packet.addLine("id before");
-        dashboard.sendTelemetryPacket(packet);
 
-            // 400 per foot
-
-        packet.put("angle", imu.getAngularOrientation().firstAngle);
-        dashboard.sendTelemetryPacket(packet);
 
         double startAngle = imu.getAngularOrientation().firstAngle;
 
         waitForStart();
-        packet.addLine("id after");
-        dashboard.sendTelemetryPacket(packet);
         int tag = getAprilTag(5);
+
+        armpotTurn(1.648);
+        sleep(200);
+
+        stringpotTurn(0.308);
+        sleep(200);
+
+   //     armpotTurn();
+        sleep(200);
+
+        grabbaServo.setPosition(0.5);
+
+
+        stringHome();
+        sleep(200);
+
+
+
+
+
+
 
         if (tag == 1){
 
@@ -107,7 +108,7 @@ public class SimpleAuto extends StarterAuto {
                 drivingCorrectionStraight(startAngle, 0.5);
             }
 
-           motorsStop();
+            motorsStop();
             sleep(1000);
 
             drivingCorrectionLeft(startAngle, -0.5);
@@ -133,4 +134,7 @@ public class SimpleAuto extends StarterAuto {
 
     }
 
-}
+
+
+    }
+

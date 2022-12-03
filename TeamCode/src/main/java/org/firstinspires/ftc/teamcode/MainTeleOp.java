@@ -1,23 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.exception.RobotCoreException;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
 
-public class FieldCentric extends StarterAuto {
+public class MainTeleOp extends StarterAuto {
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
     @Override
@@ -38,7 +30,7 @@ public class FieldCentric extends StarterAuto {
         double rotY = 0;
         double rx = 0;
 
-        double position1 = 0;
+        double position1 = 1;
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad previousGamepad1 = new Gamepad();
 

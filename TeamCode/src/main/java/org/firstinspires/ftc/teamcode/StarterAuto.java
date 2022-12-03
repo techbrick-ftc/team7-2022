@@ -280,17 +280,17 @@ public class StarterAuto extends LinearOpMode {
         backRight = hardwareMap.get(DcMotor.class, "backRight");
         colorFR = hardwareMap.colorSensor.get("colorFR");
 
-       colorFL = hardwareMap.colorSensor.get("colorFL");
-       colorBR = hardwareMap.colorSensor.get("colorBR");
+        colorFL = hardwareMap.colorSensor.get("colorFL");
+        colorBR = hardwareMap.colorSensor.get("colorBR");
         colorBL = hardwareMap.colorSensor.get("colorBL");
 
 
         grabbaServo = hardwareMap.servo.get("grabbaServo");
-       armuptouch = hardwareMap.touchSensor.get("armuptouch");
+        armuptouch = hardwareMap.touchSensor.get("armuptouch");
         wristServo = hardwareMap.servo.get("wristServo");
 
 
-       stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
+        stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
         armMotor = hardwareMap.get(DcMotor.class, "armMotor");
 
         stringpot = hardwareMap.get(AnalogInput.class, "stringpot");
@@ -312,8 +312,7 @@ public class StarterAuto extends LinearOpMode {
     }
 // picking up = arm pot bigger
 
-    void armpotTurn(double angle) {
-        double targVolt = angle / 81.8;
+    void armpotTurn(double targVolt) {
 
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
             TelemetryPacket packet = new TelemetryPacket();
@@ -350,10 +349,25 @@ public class StarterAuto extends LinearOpMode {
         while (opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN) {
             stringMotor.setPower(0.25);
         }
+        stringMotor.setPower(0);
         while (opModeIsActive() && !armuptouch.isPressed()) {
             armMotor.setPower(0.25);
         }
+        armMotor.setPower(0);
+
+        wristServo.setPosition(1);
+
+
     }
+
+    void stringHome() {
+        while (opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN) {
+            stringMotor.setPower(0.25);
+        }
+        stringMotor.setPower(0);
+    }
+
+
 
 
     void turnRobot(double angle, boolean clockwise) {
