@@ -255,6 +255,10 @@ public class StarterAuto extends LinearOpMode {
 
         }
 
+        if (lastIDSeen == 0){
+            lastIDSeen = 2;
+        }
+
         return lastIDSeen;
     }
 

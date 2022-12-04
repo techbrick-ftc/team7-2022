@@ -50,26 +50,17 @@ public class AutoScoreRight extends StarterAuto {
             //GET NEW VALUES OF COLOR BL
             startAngle = imu.getAngularOrientation().firstAngle;
          while(opModeIsActive() && ((colorBL.red() < 600  && colorBL.blue() < 500) && frontRight.getCurrentPosition() - ticksbefore < TICKSPERBLOCK * 1.2)){
-             telemetry.addData("blue", colorBL.red());
-             telemetry.addData("red", colorBL.blue());
-             telemetry.addData("ticks", frontRight.getCurrentPosition() - ticksbefore);
-             telemetry.update();
              drivingCorrectionLeft(startAngle, 0.3);
-//                backLeft.setPower(0.3);
-//                backRight.setPower(-0.3);
-//                frontRight.setPower(0.3);
-//                frontLeft.setPower(-0.3);
+//
           }
 
             motorsStop();
             sleep(1000);
-
+            startAngle = imu.getAngularOrientation().firstAngle;
             ticksbefore = backRight.getCurrentPosition();
-            while(opModeIsActive() && backRight.getCurrentPosition() - ticksbefore < 1.5 * TICKSPERBLOCK){
-                backLeft.setPower(0.5);
-                backRight.setPower(0.5);
-                frontRight.setPower(0.5);
-                frontLeft.setPower(0.5);
+            double ticksbefore2 = frontLeft.getCurrentPosition();
+            while(opModeIsActive() && ((backRight.getCurrentPosition() - ticksbefore < 1.2 * TICKSPERBLOCK) && (frontLeft.getCurrentPosition() - ticksbefore < 1.2 * TICKSPERBLOCK))){
+                drivingCorrectionStraight(startAngle, 0.3);
             }
 
             motorsStop();
@@ -104,11 +95,9 @@ public class AutoScoreRight extends StarterAuto {
 
             startAngle = imu.getAngularOrientation().firstAngle;
             double ticksbefore = frontRight.getCurrentPosition();
-            while(opModeIsActive() && frontRight.getCurrentPosition() - ticksbefore < TICKSPERBLOCK * 1.1){
-                backLeft.setPower(0.5);
-                backRight.setPower(0.5);
-                frontRight.setPower(0.5);
-                frontLeft.setPower(0.5);
+            double ticksbefore2 = backLeft.getCurrentPosition();
+            while(opModeIsActive() && ((frontRight.getCurrentPosition() - ticksbefore < TICKSPERBLOCK * 1.1) && (backLeft.getCurrentPosition() - ticksbefore2 < TICKSPERBLOCK * 1.1))){
+                drivingCorrectionStraight(startAngle, 0.5);
             }
             motorsStop();
         }

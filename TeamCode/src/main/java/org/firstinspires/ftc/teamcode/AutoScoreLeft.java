@@ -83,21 +83,16 @@ public class AutoScoreLeft extends StarterAuto {
             startAngle = imu.getAngularOrientation().firstAngle;
             double ticksbefore = frontRight.getCurrentPosition();
             while(opModeIsActive() && ((colorBR.red() < 400  && colorBR.blue() < 400) && frontRight.getCurrentPosition() - ticksbefore < TICKSPERBLOCK)){
-                backLeft.setPower(-0.3);
-                backRight.setPower(0.3);
-                frontRight.setPower(-0.3);
-                frontLeft.setPower(0.3);
+                drivingCorrectionLeft(startAngle, -0.3);
             }
             motorsStop();
             sleep(1000);
 
-
+            startAngle = imu.getAngularOrientation().firstAngle;
+           double ticksbefore2 = frontLeft.getCurrentPosition();
             ticksbefore = backRight.getCurrentPosition();
-            while(opModeIsActive() && backRight.getCurrentPosition() - ticksbefore < 1.5 * TICKSPERBLOCK){
-                backLeft.setPower(0.5);
-                backRight.setPower(0.5);
-                frontRight.setPower(0.5);
-                frontLeft.setPower(0.5);
+            while(opModeIsActive() && ((backRight.getCurrentPosition() - ticksbefore < 1.2 * TICKSPERBLOCK) && (frontLeft.getCurrentPosition() - ticksbefore2 < 1.2 * TICKSPERBLOCK))){
+                drivingCorrectionStraight(startAngle, 0.3);
             }
 
             motorsStop();
@@ -105,8 +100,6 @@ public class AutoScoreLeft extends StarterAuto {
         }
 
     }
-
-
 
     }
 
