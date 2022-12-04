@@ -24,7 +24,7 @@ public class AutoScoreLeft extends StarterAuto {
         telemetry.addData("got tag", tag);
         telemetry.update();
 
-        scoreLeft();
+        scoreMiddlePole();
 
         // reposition to straight against wall
         frontRight.setPower(-0.50);
@@ -92,7 +92,8 @@ public class AutoScoreLeft extends StarterAuto {
             sleep(1000);
 
 
-            while(opModeIsActive() && backRight.getCurrentPosition() < 1.5 * TICKSPERBLOCK){
+            ticksbefore = backRight.getCurrentPosition();
+            while(opModeIsActive() && backRight.getCurrentPosition() - ticksbefore < 1.5 * TICKSPERBLOCK){
                 backLeft.setPower(0.5);
                 backRight.setPower(0.5);
                 frontRight.setPower(0.5);

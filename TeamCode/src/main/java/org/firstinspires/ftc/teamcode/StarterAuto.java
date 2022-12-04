@@ -389,11 +389,12 @@ public class StarterAuto extends LinearOpMode {
     }
 
 
-    void scoreLeft() {
+    void scoreMiddlePole() {
         TelemetryPacket packet = new TelemetryPacket();
         packet.put("volts", armpot.getVoltage());
         dashboard.sendTelemetryPacket(packet);
         // Turn arm to initial drop
+        grabbaServo.setPosition(1);
         armpotTurn(1.542);
         sleep(100);
 
@@ -406,9 +407,9 @@ public class StarterAuto extends LinearOpMode {
 
 
         armpotTurn(1.7);
-        sleep(200);
+        sleep(700);
 
-        grabbaServo.setPosition(0.5);
+        grabbaServo.setPosition(0.3);
         sleep(700);
 
         armpotTurn(1.550);
