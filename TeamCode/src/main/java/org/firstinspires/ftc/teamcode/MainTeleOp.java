@@ -151,8 +151,8 @@ public class MainTeleOp extends StarterAuto {
             rx = gamepad1.right_stick_x;
 
             if (!speedMod) {
-                y = Range.clip(-gamepad1.left_stick_y, -0.55, 0.55);
-                x = Range.clip(gamepad1.left_stick_x, -0.5, 0.5);
+                y = Range.clip(-gamepad1.left_stick_y, -0.4, 0.4);
+                x = Range.clip(gamepad1.left_stick_x, -0.4, 0.4);
                 rx = Range.clip(gamepad1.right_stick_x, -0.25, 0.25);
             } else {
                 y = Range.clip(-gamepad1.left_stick_y, -0.95, 0.95);
