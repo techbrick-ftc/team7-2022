@@ -25,10 +25,17 @@ public class MainTeleOp extends StarterAuto {
         final int ARMROTATEMAXTICKS = 4729;
 
         boolean fieldCentric = true;
+        double stringPotLastVal = stringpot.getVoltage();
 
         double rotX = 0;
         double rotY = 0;
         double rx = 0;
+
+        double armGrabPos = 0;
+        double stringGrabPos = 0;
+
+        double armDropPos = 0;
+        double stringDropPos = 0;
 
         double position1 = 0;
         Gamepad previousGamepad2 = new Gamepad();
@@ -56,26 +63,40 @@ public class MainTeleOp extends StarterAuto {
 
             }
 
+
             // right trigger extends, extending is -1  power
             if (gamepad2.right_trigger > 0) {
+
                 if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
                     stringMotor.setPower(0);
                 } else {
                     stringMotor.setPower(-gamepad2.right_trigger);
                 }
+                stringPotLastVal = stringpot.getVoltage();
+
             } else if (gamepad2.left_trigger > 0) {
+
                 if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
                     stringMotor.setPower(0);
                 } else {
                     stringMotor.setPower(gamepad2.left_trigger);
                 }
+                stringPotLastVal = stringpot.getVoltage();
+
             } else {
-                stringMotor.setPower(0);
+                if (stringPotLastVal > stringpot.getVoltage()){
+                    stringMotor.setPower(-0.1);
+                }
+                else{
+                    stringMotor.setPower(0);
+                }
+                stringPotLastVal = stringpot.getVoltage();
             }
 
 
+
             if (cur2.back && !previousGamepad2.back) {
-                returnHome();
+                stringpotTurn(0.368);
             }
 
 
@@ -100,11 +121,50 @@ public class MainTeleOp extends StarterAuto {
                 if (!grabberOpen) {
                     grabbaServo.setPosition(0.3);
                     grabberOpen = true;
+                   armDropPos = armpot.getVoltage();
+                   stringDropPos = stringpot.getVoltage();
+
                 } else {
                     grabbaServo.setPosition(1);
                     grabberOpen = false;
+                    armGrabPos = armpot.getVoltage();
+                    stringGrabPos = stringpot.getVoltage();
                 }
             }
+
+
+            if (cur2.y && !previousGamepad2.y){
+                armpotTurn(armGrabPos - 0.5);
+
+                stringpotTurn(stringGrabPos);
+
+                grabbaServo.setPosition(0.3);
+
+                armpotTurn(armGrabPos);
+
+                grabbaServo.setPosition(1);
+
+                armpotTurn(armDropPos/2);
+
+                wristServo.setPosition(0);
+
+                armpotTurn(armDropPos - 0.5);
+
+                stringpotTurn(stringDropPos);
+
+                armpotTurn(armDropPos);
+
+                grabbaServo.setPosition(0.3);
+
+               armpotTurn(armGrabPos/2);
+
+                returnHome();
+
+            }
+
+
+
+
 
 
             if (cur2.dpad_right && !previousGamepad2.dpad_right) {

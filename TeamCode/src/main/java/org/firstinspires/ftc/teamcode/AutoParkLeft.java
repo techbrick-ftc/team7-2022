@@ -21,6 +21,7 @@ public class AutoParkLeft extends StarterAuto {
         dashboard.sendTelemetryPacket(packet);
 
         double startAngle = imu.getAngularOrientation().firstAngle;
+        imuAngle();
 
         waitForStart();
         packet.addLine("id after");
