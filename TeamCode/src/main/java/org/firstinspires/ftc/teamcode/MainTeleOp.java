@@ -34,6 +34,7 @@ public class MainTeleOp extends StarterAuto {
         double armGrabPos = 0;
         double stringGrabPos = 0;
 
+        double stringPower = 0;
         double armDropPos = 0;
         double stringDropPos = 0;
 
@@ -69,31 +70,38 @@ public class MainTeleOp extends StarterAuto {
 
                 if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
                     stringMotor.setPower(0);
+                    stringPotLastVal = stringpot.getVoltage();
+
+
                 } else {
                     stringMotor.setPower(-gamepad2.right_trigger);
+                    stringPotLastVal = stringpot.getVoltage();
                 }
-                stringPotLastVal = stringpot.getVoltage();
 
             } else if (gamepad2.left_trigger > 0) {
 
                 if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
                     stringMotor.setPower(0);
+                    stringPotLastVal = stringpot.getVoltage();
+
                 } else {
                     stringMotor.setPower(gamepad2.left_trigger);
+                    stringPotLastVal = stringpot.getVoltage();
                 }
-                stringPotLastVal = stringpot.getVoltage();
 
             } else {
-                if (stringPotLastVal > stringpot.getVoltage()){
+
+                if (stringPotLastVal > stringpot.getVoltage()) {
                     stringMotor.setPower(-0.1);
-                }
-                else{
+
+
+                } else {
                     stringMotor.setPower(0);
                 }
-                stringPotLastVal = stringpot.getVoltage();
             }
 
-
+            packet.put("stringpot", stringPotLastVal);
+            dashboard.sendTelemetryPacket(packet);
 
             if (cur2.back && !previousGamepad2.back) {
                 stringpotTurn(0.368);
@@ -134,7 +142,7 @@ public class MainTeleOp extends StarterAuto {
 
 
             if (cur2.y && !previousGamepad2.y){
-                armpotTurn(armGrabPos - 0.5);
+                armpotTurn(armGrabPos + 0.05);
 
                 stringpotTurn(stringGrabPos);
 
@@ -142,13 +150,12 @@ public class MainTeleOp extends StarterAuto {
 
                 armpotTurn(armGrabPos);
 
-                grabbaServo.setPosition(1);
 
                 armpotTurn(armDropPos/2);
 
                 wristServo.setPosition(0);
 
-                armpotTurn(armDropPos - 0.5);
+                armpotTurn(armDropPos + 0.05);
 
                 stringpotTurn(stringDropPos);
 
