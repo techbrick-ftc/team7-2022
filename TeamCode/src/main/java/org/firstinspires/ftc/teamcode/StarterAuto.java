@@ -308,7 +308,7 @@ public class StarterAuto extends LinearOpMode {
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-       // stringMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        stringMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -349,6 +349,45 @@ public class StarterAuto extends LinearOpMode {
         armMotor.setPower(0);
     }
 
+
+    void armrecordTurn(double targVolt, double speed) {
+        telemetry.addData("armturn", armpot.getVoltage());
+        telemetry.update();
+        while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.put("volt", armpot.getVoltage());
+            dashboard.sendTelemetryPacket(packet);
+            double power = Math.signum(armpot.getVoltage() - targVolt);
+
+            if (power == 1 && (armuptouch.isPressed())) {
+                break;
+            } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
+                break;
+            }
+            else{
+                armMotor.setPower(speed);
+            }
+        }
+        armMotor.setPower(0);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     //negative power to go out
     void stringpotTurn(double targetVolt) {
         telemetry.addData("stringturn", stringpot.getVoltage());
@@ -370,7 +409,11 @@ public class StarterAuto extends LinearOpMode {
                 stringMotor.setPower(power);
             }
         }
-        stringMotor.setPower(0);
+        if (armpot.getVoltage()>2){
+            stringMotor.setPower(0);
+        } else {
+            stringMotor.setPower(-0.1);
+        }
     }
 
     void returnHome() {

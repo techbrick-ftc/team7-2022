@@ -91,16 +91,15 @@ public class MainTeleOp extends StarterAuto {
 
             } else {
 
-                if (stringPotLastVal > stringpot.getVoltage()) {
-                    stringMotor.setPower(-0.1);
-
-
-                } else {
+                if (armpot.getVoltage()>2){
                     stringMotor.setPower(0);
+                } else {
+                    stringMotor.setPower(-0.1);
                 }
+
             }
 
-            packet.put("stringpot", stringPotLastVal);
+            packet.put("last val", stringPotLastVal);
             dashboard.sendTelemetryPacket(packet);
 
             if (cur2.back && !previousGamepad2.back) {
@@ -140,64 +139,67 @@ public class MainTeleOp extends StarterAuto {
                 }
             }
 
-
+                //grab is negative speed for ARM
             if (cur2.y && !previousGamepad2.y){
-                armpotTurn(armGrabPos + 0.05);
+
+                armrecordTurn(armGrabPos - 0.5, -1);
 
                 stringpotTurn(stringGrabPos);
 
                 grabbaServo.setPosition(0.3);
 
-                armpotTurn(armGrabPos);
+                armrecordTurn(armGrabPos, -0.7);
+                sleep(200);
 
+                grabbaServo.setPosition(1);
+                sleep(200);
 
-                armpotTurn(armDropPos/2);
+                armrecordTurn(armDropPos + 0.2, 1);
+
+                wristServo.setPosition(0.94);
+
+                stringpotTurn(stringDropPos);
+                sleep(400);
+
+                armrecordTurn(armDropPos, 0.5);
+                sleep(300);
+
+                grabbaServo.setPosition(0.3);
+                sleep(300);
+
+                armrecordTurn(1, -1);
 
                 wristServo.setPosition(0);
 
-                armpotTurn(armDropPos + 0.05);
-
-                stringpotTurn(stringDropPos);
-
-                armpotTurn(armDropPos);
-
-                grabbaServo.setPosition(0.3);
-
-               armpotTurn(armGrabPos/2);
-
-                returnHome();
 
             }
-
-
-
-
 
 
             if (cur2.dpad_right && !previousGamepad2.dpad_right) {
-                position1 += 0.10;
+                position1 += 0.1;
 
             }
             if (cur2.dpad_left && !previousGamepad2.dpad_left) {
-                position1 -= 0.10;
+                position1 -= 0.1;
 
             }
 
-            if (cur2.right_stick_y < -0.95) {
-                position1 = 1;
+            if (cur2.right_stick_y < -0.9) {
+                position1 = 0.94;
 
             }
 
-            if (cur2.right_stick_y > 0.95) {
+            if (cur2.right_stick_y > 0.9) {
                 position1 = 0;
             }
 
             if (position1 > 1) {
-                position1 = 1;
+                position1 = 0.94;
             } else if (position1 < 0) {
                 position1 = 0;
             }
             wristServo.setPosition(position1);
+            packet.put("position", position1);
 
             if (cur1.right_bumper && !previousGamepad1.right_bumper){
                 speedMod = true;
