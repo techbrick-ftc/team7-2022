@@ -71,6 +71,7 @@ public class AutoScoreLeft extends StarterAuto {
             }
             motorsStop();
 
+
         } else if (tag == 2) {
 
             // Move straight for 1.25 blocks then stop

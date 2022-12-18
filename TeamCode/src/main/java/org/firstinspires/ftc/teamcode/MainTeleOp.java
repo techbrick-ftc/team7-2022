@@ -51,6 +51,7 @@ public class MainTeleOp extends StarterAuto {
 
         waitForStart();
 
+
         zeroAngle = imu.getAngularOrientation().firstAngle;
 
         while (opModeIsActive()) {
@@ -138,6 +139,7 @@ public class MainTeleOp extends StarterAuto {
                     stringGrabPos = stringpot.getVoltage();
                 }
             }
+
 
                 //grab is negative speed for ARM
             if (cur2.y && !previousGamepad2.y){
