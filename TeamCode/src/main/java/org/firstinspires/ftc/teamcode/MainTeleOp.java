@@ -9,7 +9,13 @@ import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
 
+
 public class MainTeleOp extends StarterAuto {
+
+    enum states {
+        Manual, GrabAlign, Grab, Align, Release, Pause
+    }
+
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
 
     @Override
@@ -26,6 +32,11 @@ public class MainTeleOp extends StarterAuto {
 
         boolean fieldCentric = true;
         double stringPotLastVal = stringpot.getVoltage();
+
+
+        states currentState = states.Manual;
+        states pausedState = states.Pause;
+
 
         double rotX = 0;
         double rotY = 0;
@@ -92,7 +103,7 @@ public class MainTeleOp extends StarterAuto {
 
             } else {
 
-                if (armpot.getVoltage()>2){
+                if (armpot.getVoltage() > 2) {
                     stringMotor.setPower(0);
                 } else {
                     stringMotor.setPower(-0.1);
@@ -129,8 +140,8 @@ public class MainTeleOp extends StarterAuto {
                 if (!grabberOpen) {
                     grabbaServo.setPosition(0.3);
                     grabberOpen = true;
-                   armDropPos = armpot.getVoltage();
-                   stringDropPos = stringpot.getVoltage();
+                    armDropPos = armpot.getVoltage();
+                    stringDropPos = stringpot.getVoltage();
 
                 } else {
                     grabbaServo.setPosition(1);
@@ -141,40 +152,66 @@ public class MainTeleOp extends StarterAuto {
             }
 
 
-                //grab is negative speed for ARM
-            if (cur2.y && !previousGamepad2.y){
+            // grab is negative speed for ARM
+//            if (cur2.y && !previousGamepad2.y){
+//
+//                armrecordTurn(armGrabPos - 0.5, -1);
+//
+//                stringpotTurn(stringGrabPos);
+//
+//                grabbaServo.setPosition(0.3);
+//
+//                armrecordTurn(armGrabPos, -0.5);
+//                sleep(200);
+//
+//                grabbaServo.setPosition(1);
+//                sleep(200);
+//
+//                armrecordTurn(armDropPos + 0.2, 1);
+//
+//                wristServo.setPosition(0.94);
+//
+//                stringpotTurn(stringDropPos);
+//                sleep(400);
+//
+//                armrecordTurn(armDropPos, 0.5);
+//                sleep(300);
+//
+//                grabbaServo.setPosition(0.3);
+//                sleep(300);
+//
+//                armrecordTurn(1, -1);
+//
+//                wristServo.setPosition(0);
+//
+//            }
 
-                armrecordTurn(armGrabPos - 0.5, -1);
-
-                stringpotTurn(stringGrabPos);
-
-                grabbaServo.setPosition(0.3);
-
-                armrecordTurn(armGrabPos, -0.7);
-                sleep(200);
-
-                grabbaServo.setPosition(1);
-                sleep(200);
-
-                armrecordTurn(armDropPos + 0.2, 1);
-
-                wristServo.setPosition(0.94);
-
-                stringpotTurn(stringDropPos);
-                sleep(400);
-
-                armrecordTurn(armDropPos, 0.5);
-                sleep(300);
-
-                grabbaServo.setPosition(0.3);
-                sleep(300);
-
-                armrecordTurn(1, -1);
-
-                wristServo.setPosition(0);
-
+            if (!cur2.y && previousGamepad2.y) {
+                if (currentState == states.Manual) {
+                    currentState = states.GrabAlign;
+                } else if (currentState == states.Pause) {
+                    currentState = pausedState;
+                }
+            }
+            if (cur2.y && !previousGamepad2.y) {
+                if (currentState == states.GrabAlign || currentState == states.Align) {
+                    pausedState = currentState;
+                    currentState = states.Pause;
+                }
+            }
+            if (currentState == states.GrabAlign) {
+               if (Math.abs(armpot.getVoltage() - armGrabPos - 0.5) <= 0.01 && Math.abs(stringpot.getVoltage() - stringGrabPos) <= 0.01){
+                   currentState = states.Grab;
+               }
+               armMotor.setPower(-1);
+               stringMotor.setPower(-1);
+            }
+            if (currentState == states.Grab){
 
             }
+
+
+
 
 
             if (cur2.dpad_right && !previousGamepad2.dpad_right) {
@@ -203,10 +240,9 @@ public class MainTeleOp extends StarterAuto {
             wristServo.setPosition(position1);
             packet.put("position", position1);
 
-            if (cur1.right_bumper && !previousGamepad1.right_bumper){
+            if (cur1.right_bumper && !previousGamepad1.right_bumper) {
                 speedMod = true;
-            }
-            else if (cur1.left_bumper && !previousGamepad1.left_bumper){
+            } else if (cur1.left_bumper && !previousGamepad1.left_bumper) {
                 speedMod = false;
             }
 

@@ -4,15 +4,18 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.apriltag.AprilTagDetection;
@@ -112,6 +115,9 @@ public class StarterAuto extends LinearOpMode {
     final double TICKSPERBLOCK = 805;   // 400 per foot
     final double ARMROTATEMAXVOLT = 2.5;
     final double ARMVOLTSMID = 1.05;
+
+
+
 
     void drivingCorrectionStraight(double startAngle2, double power) {
 
@@ -317,6 +323,8 @@ public class StarterAuto extends LinearOpMode {
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         imu.initialize(params);
 
+
+
     }
 
     // picking up = arm pot bigger
@@ -351,9 +359,13 @@ public class StarterAuto extends LinearOpMode {
 
 
     void armrecordTurn(double targVolt, double speed) {
+        Gamepad cur2 = new Gamepad();
+        Gamepad previousGamepad2 = new Gamepad();
+        boolean released = false;
         telemetry.addData("armturn", armpot.getVoltage());
         telemetry.update();
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
+
             TelemetryPacket packet = new TelemetryPacket();
             packet.put("volt", armpot.getVoltage());
             dashboard.sendTelemetryPacket(packet);
@@ -367,7 +379,11 @@ public class StarterAuto extends LinearOpMode {
             else{
                 armMotor.setPower(speed);
             }
+            released = previousGamepad2.y;
+
+
         }
+
         armMotor.setPower(0);
     }
 
