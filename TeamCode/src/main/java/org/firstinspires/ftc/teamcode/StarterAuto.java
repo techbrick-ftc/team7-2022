@@ -359,9 +359,7 @@ public class StarterAuto extends LinearOpMode {
 
 
     void armrecordTurn(double targVolt, double speed) {
-        Gamepad cur2 = new Gamepad();
-        Gamepad previousGamepad2 = new Gamepad();
-        boolean released = false;
+
         telemetry.addData("armturn", armpot.getVoltage());
         telemetry.update();
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
@@ -379,9 +377,6 @@ public class StarterAuto extends LinearOpMode {
             else{
                 armMotor.setPower(speed);
             }
-            released = previousGamepad2.y;
-
-
         }
 
         armMotor.setPower(0);

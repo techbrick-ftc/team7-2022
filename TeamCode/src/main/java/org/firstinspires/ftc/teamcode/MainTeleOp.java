@@ -42,12 +42,14 @@ public class MainTeleOp extends StarterAuto {
         double rotY = 0;
         double rx = 0;
 
-        double armGrabPos = 0;
-        double stringGrabPos = 0;
+        double armGrabPos = ARMVOLTSMID;
+        double stringGrabPos = VOLTSSTRINGDOWN;
 
-        double stringPower = 0;
-        double armDropPos = 0;
-        double stringDropPos = 0;
+        double stringpower = 0;
+        double armpower = 0;
+
+        double armDropPos = ARMVOLTSMID;
+        double stringDropPos = VOLTSSTRINGDOWN;
 
         double position1 = 0;
         Gamepad previousGamepad2 = new Gamepad();
@@ -67,6 +69,7 @@ public class MainTeleOp extends StarterAuto {
 
         while (opModeIsActive()) {
             packet.put("arm encoder", stringMotor.getCurrentPosition());
+            packet.put("state", currentState);
             dashboard.sendTelemetryPacket(packet);
 
             try {
@@ -78,39 +81,40 @@ public class MainTeleOp extends StarterAuto {
 
 
             // right trigger extends, extending is -1  power
-            if (gamepad2.right_trigger > 0) {
+            if (currentState == states.Manual) {
+                if (gamepad2.right_trigger > 0) {
 
-                if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
-                    stringMotor.setPower(0);
-                    stringPotLastVal = stringpot.getVoltage();
+                    if (stringpot.getVoltage() <= VOLTSSTRINGUP) {
+                        stringMotor.setPower(0);
+                        stringPotLastVal = stringpot.getVoltage();
 
+
+                    } else {
+                        stringMotor.setPower(-gamepad2.right_trigger);
+                        stringPotLastVal = stringpot.getVoltage();
+                    }
+
+                } else if (gamepad2.left_trigger > 0) {
+
+                    if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
+                        stringMotor.setPower(0);
+                        stringPotLastVal = stringpot.getVoltage();
+
+                    } else {
+                        stringMotor.setPower(gamepad2.left_trigger);
+                        stringPotLastVal = stringpot.getVoltage();
+                    }
 
                 } else {
-                    stringMotor.setPower(-gamepad2.right_trigger);
-                    stringPotLastVal = stringpot.getVoltage();
+
+                    if (armpot.getVoltage() > 2) {
+                        stringMotor.setPower(0);
+                    } else {
+                        stringMotor.setPower(-0.1);
+                    }
+
                 }
-
-            } else if (gamepad2.left_trigger > 0) {
-
-                if (stringpot.getVoltage() >= VOLTSSTRINGDOWN) {
-                    stringMotor.setPower(0);
-                    stringPotLastVal = stringpot.getVoltage();
-
-                } else {
-                    stringMotor.setPower(gamepad2.left_trigger);
-                    stringPotLastVal = stringpot.getVoltage();
-                }
-
-            } else {
-
-                if (armpot.getVoltage() > 2) {
-                    stringMotor.setPower(0);
-                } else {
-                    stringMotor.setPower(-0.1);
-                }
-
             }
-
             packet.put("last val", stringPotLastVal);
             dashboard.sendTelemetryPacket(packet);
 
@@ -118,19 +122,19 @@ public class MainTeleOp extends StarterAuto {
                 stringpotTurn(0.368);
             }
 
-
-            if ((gamepad2.left_stick_y < 0 && armpot.getVoltage() >= ARMROTATEMAXVOLT)
-                    || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())) {
-                armMotor.setPower(0);
-            } else {
-                armMotor.setPower(gamepad2.left_stick_y * 0.7);
+            if (currentState == states.Manual) {
+                if ((gamepad2.left_stick_y < 0 && armpot.getVoltage() >= ARMROTATEMAXVOLT)
+                        || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())) {
+                    armMotor.setPower(0);
+                } else {
+                    armMotor.setPower(gamepad2.left_stick_y * 0.7);
+                }
+                packet.put("arm max", armMotor.getCurrentPosition());
+                packet.put("arm up touch", armuptouch.isPressed());
+                packet.put("zero", armrotate0);
+                packet.put("armvolt", armpot.getVoltage());
+                packet.put("stringpot", stringpot.getVoltage());
             }
-            packet.put("arm max", armMotor.getCurrentPosition());
-            packet.put("arm up touch", armuptouch.isPressed());
-            packet.put("zero", armrotate0);
-            packet.put("armvolt", armpot.getVoltage());
-            packet.put("stringpot", stringpot.getVoltage());
-
 
             if (armuptouch.isPressed()) {
                 armrotate0 = armMotor.getCurrentPosition();
@@ -199,19 +203,63 @@ public class MainTeleOp extends StarterAuto {
                     currentState = states.Pause;
                 }
             }
+            if (cur2.b && !previousGamepad2.b) {
+                stringMotor.setPower(0);
+                armMotor.setPower(0);
+                currentState = states.Manual;
+                pausedState = states.Manual;
+
+            }
             if (currentState == states.GrabAlign) {
-               if (Math.abs(armpot.getVoltage() - armGrabPos - 0.5) <= 0.01 && Math.abs(stringpot.getVoltage() - stringGrabPos) <= 0.01){
-                   currentState = states.Grab;
-               }
-               armMotor.setPower(-1);
-               stringMotor.setPower(-1);
+                if (Math.abs(armpot.getVoltage() - (armGrabPos - 0.5)) <= 0.01){
+                    armMotor.setPower(0);
+                }
+                if (Math.abs(armpot.getVoltage() - (armGrabPos - 0.5)) <= 0.01 && Math.abs(stringpot.getVoltage() - stringGrabPos) <= 0.01) {
+                    armMotor.setPower(0);
+                    stringMotor.setPower(0);
+                    currentState = states.Grab;
+
+                } else {
+                    stringpower = Math.signum(stringGrabPos - stringpot.getVoltage());
+                    armpower = Math.signum(stringpot.getVoltage() - (armGrabPos - 0.5));
+                    armMotor.setPower(armpower * 0.3);
+                    stringMotor.setPower(stringpower * 0.3);
+                }
             }
-            if (currentState == states.Grab){
+            if (currentState == states.Grab) {
+                grabbaServo.setPosition(0.3);
+                armrecordTurn(armGrabPos, -0.5);
+                sleep(200);
+                grabbaServo.setPosition(1);
+                sleep(200);
+                currentState = states.Align;
+            }
+            if (currentState == states.Align) {
+                if (Math.abs(armpot.getVoltage() - (armDropPos + 0.2)) <= 0.01 && Math.abs(stringpot.getVoltage() - stringDropPos) <= 0.01) {
+                    armMotor.setPower(0);
+                    stringMotor.setPower(0);
+                    currentState = states.Release;
+                } else {
+                    stringpower = Math.signum(stringDropPos - stringpot.getVoltage());
+                    armpower = Math.signum(armpot.getVoltage() - (armDropPos + 0.2));
+                    armMotor.setPower(armpower * 0.3);
+                    stringMotor.setPower(stringpower * 0.3);
+                    wristServo.setPosition(0.94);
+                }
+            }
+            if (currentState == states.Release) {
+                armrecordTurn(armDropPos, 0.5);
+                sleep(300);
+                grabbaServo.setPosition(0.3);
+                sleep(300);
+                armrecordTurn(1, -1);
+                wristServo.setPosition(0);
+            }
+            if (currentState == states.Pause) {
+                stringMotor.setPower(0);
+                armMotor.setPower(0);
 
             }
-
-
-
 
 
             if (cur2.dpad_right && !previousGamepad2.dpad_right) {
