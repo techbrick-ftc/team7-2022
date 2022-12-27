@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Paint;
+
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.exception.RobotCoreException;
@@ -139,6 +141,7 @@ public class MainTeleOp extends StarterAuto {
             if (!cur2.y && previousGamepad2.y) {
                 if (currentState == states.Manual) {
                     currentState = states.GrabAlign;
+                    wristServo.setPosition(0);
                 } else if (currentState == states.Pause) {
                     currentState = pausedState;
                 }
@@ -157,64 +160,70 @@ public class MainTeleOp extends StarterAuto {
 
             }
             if (currentState == states.GrabAlign) {
-                if (armAsync(armGrabPos - 0.5) && stringAsync(stringGrabPos)) {
+                boolean armDone = armAsync(armGrabPos - 0.5);
+                boolean stringDone = stringAsync(stringGrabPos);
+                if (armDone && stringDone) {
                     currentState = states.Grab;
                 }
             }
             if (currentState == states.Grab) {
                 grabbaServo.setPosition(0.3);
-                armSync(armGrabPos, -0.5);
+                armSync(armGrabPos);
                 sleep(200);
                 grabbaServo.setPosition(1);
                 sleep(200);
+                wristServo.setPosition(0.94);
                 currentState = states.Align;
             }
             if (currentState == states.Align) {
-                wristServo.setPosition(0.94);
-                if (armAsync(armDropPos + 0.2) && stringAsync(stringDropPos)) {
+                boolean armDone = armAsync(armDropPos + 0.3);
+                //boolean stringDone = stringAsync(stringDropPos);
+                if (armDone) {
                     currentState = states.Release;
                 }
             }
             if (currentState == states.Release) {
-                armSync(armDropPos, 0.5);
-                sleep(300);
+                stringSync(stringDropPos);
+                armSync(armDropPos);
+                sleep(200);
                 grabbaServo.setPosition(0.3);
-                sleep(300);
-                armSync(1, -1);
+                sleep(200);
+                armSync(1);
                 wristServo.setPosition(0);
+                currentState = states.Manual;
             }
             if (currentState == states.Pause) {
                 stringMotor.setPower(0);
                 armMotor.setPower(0);
-
             }
 
 
-            if (cur2.dpad_right && !previousGamepad2.dpad_right) {
-                wristPosition += 0.1;
+            if (currentState == states.Manual) {
+                if (cur2.dpad_right && !previousGamepad2.dpad_right) {
+                    wristPosition += 0.1;
 
+                }
+                if (cur2.dpad_left && !previousGamepad2.dpad_left) {
+                    wristPosition -= 0.1;
+
+                }
+
+                if (cur2.right_stick_y < -0.9) {
+                    wristPosition = 0.94;
+                }
+
+                if (cur2.right_stick_y > 0.9) {
+                    wristPosition = 0;
+                }
+
+                if (wristPosition > 1) {
+                    wristPosition = 0.94;
+                } else if (wristPosition < 0) {
+                    wristPosition = 0;
+                }
+                wristServo.setPosition(wristPosition);
+                packet.put("position", wristPosition);
             }
-            if (cur2.dpad_left && !previousGamepad2.dpad_left) {
-                wristPosition -= 0.1;
-
-            }
-
-            if (cur2.right_stick_y < -0.9) {
-                wristPosition = 0.94;
-            }
-
-            if (cur2.right_stick_y > 0.9) {
-                wristPosition = 0;
-            }
-
-            if (wristPosition > 1) {
-                wristPosition = 0.94;
-            } else if (wristPosition < 0) {
-                wristPosition = 0;
-            }
-            wristServo.setPosition(wristPosition);
-            packet.put("position", wristPosition);
-
             if (cur1.right_bumper && !previousGamepad1.right_bumper) {
                 speedMod = true;
             } else if (cur1.left_bumper && !previousGamepad1.left_bumper) {

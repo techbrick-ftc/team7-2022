@@ -282,7 +282,7 @@ public class StarterAuto extends LinearOpMode {
 
     // picking up = arm pot bigger
     // negative power to pick up - ARM
-    void armPotTurn(double targVolt) {
+    void armSync(double targVolt) {
         telemetry.addData("armturn", armpot.getVoltage());
         telemetry.update();
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
@@ -308,26 +308,6 @@ public class StarterAuto extends LinearOpMode {
         armMotor.setPower(0);
     }
 
-    void armSync(double targVolt, double speed) {
-        telemetry.addData("armturn", armpot.getVoltage());
-        telemetry.update();
-        while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
-            TelemetryPacket packet = new TelemetryPacket();
-            packet.put("volt", armpot.getVoltage());
-            dashboard.sendTelemetryPacket(packet);
-            double power = Math.signum(armpot.getVoltage() - targVolt);
-
-            if (power == 1 && (armuptouch.isPressed())) {
-                break;
-            } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
-                break;
-            } else {
-                armMotor.setPower(speed);
-            }
-        }
-
-        armMotor.setPower(0);
-    }
 
     // negative power to go out
     void stringSync(double targetVolt) {
@@ -382,7 +362,7 @@ public class StarterAuto extends LinearOpMode {
 
         // Turn arm to initial drop
         grabbaServo.setPosition(1);
-        armPotTurn(1.542);
+        armSync(1.542);
         sleep(100);
 
         if (getRuntime() - time > 15) {
@@ -398,7 +378,7 @@ public class StarterAuto extends LinearOpMode {
             return;
         }
 
-        armPotTurn(1.7);
+        armSync(1.7);
         sleep(700);
 
         if (getRuntime() - time > 15) {
@@ -412,7 +392,7 @@ public class StarterAuto extends LinearOpMode {
             return;
         }
 
-        armPotTurn(1.550);
+        armSync(1.550);
         sleep(200);
 
         if (getRuntime() - time > 15) {
@@ -425,8 +405,8 @@ public class StarterAuto extends LinearOpMode {
 
     boolean stringAsync(double targetVolt) {
         double power = Math.signum(targetVolt - stringpot.getVoltage());
-        if (Math.abs(stringpot.getVoltage() - targetVolt) <= 0.01) {
-            stringMotor.setPower(0);
+        if (Math.abs(stringpot.getVoltage() - targetVolt) <= 0.02) {
+            stringNoBackDrive();
             return true;
         }
         if (power == -1 && (stringpot.getVoltage() <= VOLTSSTRINGUP)) {
@@ -435,10 +415,11 @@ public class StarterAuto extends LinearOpMode {
             stringNoBackDrive();
         } else {
             if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
-                power *= 0.5;
+                power *= 0.3;
             } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
-                power *= 0.6;
+                power *= 0.4;
             }
+            power = Range.clip(power, -0.7, 0.7);
             stringMotor.setPower(power);
         }
         return false;
@@ -455,12 +436,12 @@ public class StarterAuto extends LinearOpMode {
         } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
             armMotor.setPower(0);
         } else {
-            if (Math.abs(armpot.getVoltage() - targVolt) < .5) {
-                power *= 0.4;
-            } else if (Math.abs(armpot.getVoltage() - targVolt) < 1) {
+            if (Math.abs(armpot.getVoltage() - targVolt) < .1) {
                 power *= 0.5;
+            } else if (Math.abs(armpot.getVoltage() - targVolt) < .2) {
+                power *= 0.6;
             }
-            power = Range.clip(power, -0.7, 0.7);
+            power = Range.clip(power, -0.8, 0.8);
             armMotor.setPower(power);
         }
         return false;
