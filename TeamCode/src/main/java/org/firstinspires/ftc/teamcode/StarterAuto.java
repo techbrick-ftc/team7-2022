@@ -117,8 +117,6 @@ public class StarterAuto extends LinearOpMode {
     final double ARMVOLTSMID = 1.05;
 
 
-
-
     void drivingCorrectionStraight(double startAngle2, double power) {
 
 
@@ -324,7 +322,6 @@ public class StarterAuto extends LinearOpMode {
         imu.initialize(params);
 
 
-
     }
 
     // picking up = arm pot bigger
@@ -373,30 +370,13 @@ public class StarterAuto extends LinearOpMode {
                 break;
             } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
                 break;
-            }
-            else{
+            } else {
                 armMotor.setPower(speed);
             }
         }
 
         armMotor.setPower(0);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     //negative power to go out
@@ -411,7 +391,7 @@ public class StarterAuto extends LinearOpMode {
             } else if (power == 1 && (stringpot.getVoltage() > VOLTSSTRINGDOWN)) {
                 break;
             } else {
-            if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
+                if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
                     power *= 0.5;
 
                 } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
@@ -420,7 +400,7 @@ public class StarterAuto extends LinearOpMode {
                 stringMotor.setPower(power);
             }
         }
-        if (armpot.getVoltage()>2){
+        if (armpot.getVoltage() > 2) {
             stringMotor.setPower(0);
         } else {
             stringMotor.setPower(-0.1);
@@ -453,8 +433,6 @@ public class StarterAuto extends LinearOpMode {
         double time = getRuntime();
 
 
-
-
         TelemetryPacket packet = new TelemetryPacket();
         packet.put("volts", armpot.getVoltage());
         dashboard.sendTelemetryPacket(packet);
@@ -464,9 +442,8 @@ public class StarterAuto extends LinearOpMode {
         sleep(100);
 
 
-
-        if (getRuntime() - time > 15){
-             return;
+        if (getRuntime() - time > 15) {
+            return;
         }
 
         // Extend
@@ -477,17 +454,16 @@ public class StarterAuto extends LinearOpMode {
         sleep(200);
 
 
-        if (getRuntime() - time > 15){
+        if (getRuntime() - time > 15) {
             return;
         }
-
 
 
         armpotTurn(1.7);
         sleep(700);
 
 
-        if (getRuntime() - time > 15){
+        if (getRuntime() - time > 15) {
             return;
         }
 
@@ -496,7 +472,7 @@ public class StarterAuto extends LinearOpMode {
         sleep(700);
 
 
-        if (getRuntime() - time > 15){
+        if (getRuntime() - time > 15) {
             return;
         }
 
@@ -505,7 +481,7 @@ public class StarterAuto extends LinearOpMode {
         sleep(200);
 
 
-        if (getRuntime() - time > 15){
+        if (getRuntime() - time > 15) {
             return;
         }
 
@@ -514,6 +490,60 @@ public class StarterAuto extends LinearOpMode {
         sleep(100);
 
 
+    }
+
+
+    boolean stringasync(double targetVolt) {
+        double power = Math.signum(targetVolt - stringpot.getVoltage());
+       if (Math.abs(stringpot.getVoltage() - targetVolt) <= 0.01){
+           stringMotor.setPower(0);
+           return true;
+       }
+        if (power == -1 && (stringpot.getVoltage() <= VOLTSSTRINGUP)) {
+            stringnobackdrive();
+        } else if (power == 1 && (stringpot.getVoltage() > VOLTSSTRINGDOWN)) {
+            stringnobackdrive();
+        } else {
+            if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
+                power *= 0.5;
+
+            } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
+                power *= 0.6;
+            }
+            stringMotor.setPower(power);
+        }
+        return false;
+    }
+
+
+    boolean armasync(double targVolt) {
+        double power = Math.signum(armpot.getVoltage() - targVolt);
+        if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
+            armMotor.setPower(0);
+            return true;
+        }
+        if (power == 1 && (armuptouch.isPressed())) {
+            armMotor.setPower(0);
+        } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
+            armMotor.setPower(0);
+        } else {
+            if (Math.abs(armpot.getVoltage() - targVolt) < .5) {
+                power *= 0.4;
+            } else if (Math.abs(armpot.getVoltage() - targVolt) < 1) {
+                power *= 0.5;
+            }
+            power = Range.clip(power, -0.7, 0.7);
+            armMotor.setPower(power);
+        }
+        return false;
+    }
+
+    void stringnobackdrive() {
+        if (armpot.getVoltage() > 2) {
+            stringMotor.setPower(0);
+        } else {
+            stringMotor.setPower(-0.1);
+        }
     }
 
 
@@ -553,9 +583,6 @@ public class StarterAuto extends LinearOpMode {
         packet.put("IMU Angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
     }
-
-
-
 
 
     @Override

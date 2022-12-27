@@ -211,19 +211,8 @@ public class MainTeleOp extends StarterAuto {
 
             }
             if (currentState == states.GrabAlign) {
-                if (Math.abs(armpot.getVoltage() - (armGrabPos - 0.5)) <= 0.01){
-                    armMotor.setPower(0);
-                }
-                if (Math.abs(armpot.getVoltage() - (armGrabPos - 0.5)) <= 0.01 && Math.abs(stringpot.getVoltage() - stringGrabPos) <= 0.01) {
-                    armMotor.setPower(0);
-                    stringMotor.setPower(0);
+                if (armasync(armGrabPos - 0.5) && stringasync(stringGrabPos)) {
                     currentState = states.Grab;
-
-                } else {
-                    stringpower = Math.signum(stringGrabPos - stringpot.getVoltage());
-                    armpower = Math.signum(stringpot.getVoltage() - (armGrabPos - 0.5));
-                    armMotor.setPower(armpower * 0.3);
-                    stringMotor.setPower(stringpower * 0.3);
                 }
             }
             if (currentState == states.Grab) {
@@ -235,16 +224,9 @@ public class MainTeleOp extends StarterAuto {
                 currentState = states.Align;
             }
             if (currentState == states.Align) {
-                if (Math.abs(armpot.getVoltage() - (armDropPos + 0.2)) <= 0.01 && Math.abs(stringpot.getVoltage() - stringDropPos) <= 0.01) {
-                    armMotor.setPower(0);
-                    stringMotor.setPower(0);
+                wristServo.setPosition(0.94);
+                if (armasync(armDropPos + 0.2) && stringasync(stringDropPos)) {
                     currentState = states.Release;
-                } else {
-                    stringpower = Math.signum(stringDropPos - stringpot.getVoltage());
-                    armpower = Math.signum(armpot.getVoltage() - (armDropPos + 0.2));
-                    armMotor.setPower(armpower * 0.3);
-                    stringMotor.setPower(stringpower * 0.3);
-                    wristServo.setPosition(0.94);
                 }
             }
             if (currentState == states.Release) {
