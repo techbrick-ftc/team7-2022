@@ -1,21 +1,16 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.exception.RobotCoreException;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.apriltag.AprilTagDetection;
@@ -57,47 +52,23 @@ Expansion Hub:
  */
 
 public class StarterAuto extends LinearOpMode {
-
-
-    OpenCvCamera camera;
-    AprilTagDetectionPipeline aprilTagDetectionPipeline;
-
     static final double FEET_PER_METER = 3.28084;
-
-    double fx = 1481.603;
-    double fy = 1527.539;
-    double cx = 550.003;
-    double cy = 90.751;
-
-    // UNITS ARE METERS
-    double tagsize = 0.045;
-
-
-    int numFramesWithoutDetection = 0;
-
-    int[] arrayDetections = new int[64];
-    int detectionIndex = 0;
-
-
     final float DECIMATION_HIGH = 3;
     final float DECIMATION_LOW = 2;
     final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
     final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
-
-    public void insertDetection(int value) {
-        arrayDetections[detectionIndex] = value;
-        detectionIndex++;
-        if (detectionIndex == arrayDetections.length) {
-            detectionIndex = 0;
-        }
-    }
-
+    final double VOLTSPERTRIP = 1.438; // may need to change
+    final double VOLTSSTRINGUP = 0.069;
+    final double VOLTSSTRINGDOWN = 1.454;
+    final double TICKSPERBLOCK = 805;   // ~400 per foot
+    final double ARMROTATEMAXVOLT = 2.5;
+    final double ARMVOLTSMID = 1.05;
+    private final FtcDashboard dashboard = FtcDashboard.getInstance();
     public DcMotor frontLeft;
     public DcMotor backLeft;
     public DcMotor frontRight;
     public DcMotor backRight;
     public BNO055IMU imu;
-    private final FtcDashboard dashboard = FtcDashboard.getInstance();
     public ColorSensor colorFR;
     public ColorSensor colorFL;
     public ColorSensor colorBR;
@@ -109,20 +80,28 @@ public class StarterAuto extends LinearOpMode {
     public AnalogInput armpot;
     public DcMotor armMotor;
     public DcMotor stringMotor;
-    final double VOLTSPERTRIP = 1.438; //may need to change
-    final double VOLTSSTRINGUP = 0.069;
-    final double VOLTSSTRINGDOWN = 1.454;
-    final double TICKSPERBLOCK = 805;   // 400 per foot
-    final double ARMROTATEMAXVOLT = 2.5;
-    final double ARMVOLTSMID = 1.05;
+    OpenCvCamera camera;
+    AprilTagDetectionPipeline aprilTagDetectionPipeline;
+    double fx = 1481.603;
+    double fy = 1527.539;
+    double cx = 550.003;
+    double cy = 90.751;
+    // UNITS ARE METERS
+    double tagsize = 0.045;
+    int numFramesWithoutDetection = 0;
+    int[] arrayDetections = new int[64];
+    int detectionIndex = 0;
 
+    public void insertDetection(int value) {
+        arrayDetections[detectionIndex] = value;
+        detectionIndex++;
+        if (detectionIndex == arrayDetections.length) {
+            detectionIndex = 0;
+        }
+    }
 
     void drivingCorrectionStraight(double startAngle2, double power) {
-
-
         TelemetryPacket packet = new TelemetryPacket();
-
-
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
 
@@ -133,13 +112,10 @@ public class StarterAuto extends LinearOpMode {
         backLeft.setPower(power + difference);
         frontLeft.setPower(power + difference);
         frontRight.setPower(power - difference);
-
     }
-
 
     void drivingCorrectionLeft(double startAngle, double power) {
         TelemetryPacket packet = new TelemetryPacket();
-
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
 
@@ -152,7 +128,6 @@ public class StarterAuto extends LinearOpMode {
         backRight.setPower(-power - difference);
     }
 
-
     void motorsStop() {
         backRight.setPower(0);
         backLeft.setPower(0);
@@ -163,25 +138,16 @@ public class StarterAuto extends LinearOpMode {
     boolean tapeSensor45(boolean red) {
         if (red && colorFL.red() > 1500 && colorBR.red() > 500) {
             return false;
-        } else if (!red && colorFR.blue() > 2000 && colorBL.blue() > 500) {
-            return false;
-        } else {
-            return true;
-        }
+        } else return red || colorFR.blue() <= 2000 || colorBL.blue() <= 500;
     }
 
     boolean tapeSensor90(boolean red) {
-
         if (red && colorFL.red() > 1500 && colorFR.red() > 3000) {
             return false;
-        } else if (!red && colorFL.blue() > 2000 && colorFR.blue() > 2500) {
-            return false;
         } else {
-            return true;
+            return red || colorFL.blue() <= 2000 || colorFR.blue() <= 2500;
         }
-
     }
-
 
     void initAprilTags() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -211,7 +177,6 @@ public class StarterAuto extends LinearOpMode {
         int lastIDSeen = 0;
         int numofTimesSeen = 0;
         double time = getRuntime();
-
 
         while (opModeIsActive() && numofTimesSeen < 10 && (getRuntime() - time) < timeOut) {
             TelemetryPacket packet = new TelemetryPacket();
@@ -245,7 +210,6 @@ public class StarterAuto extends LinearOpMode {
                     if (detections.get(0).pose.z < THRESHOLD_HIGH_DECIMATION_RANGE_METERS) {
                         aprilTagDetectionPipeline.setDecimation(DECIMATION_HIGH);
                     }
-
                 }
 
                 telemetry.update();
@@ -256,7 +220,6 @@ public class StarterAuto extends LinearOpMode {
             }
             dashboard.sendTelemetryPacket(packet);
             sleep(20);
-
         }
 
         if (lastIDSeen == 0) {
@@ -265,7 +228,6 @@ public class StarterAuto extends LinearOpMode {
 
         return lastIDSeen;
     }
-
 
     private double wrap(double theta) {
         double newTheta = theta;
@@ -282,7 +244,6 @@ public class StarterAuto extends LinearOpMode {
     boolean shouldStopTurning(double targetAngle) {
         double currentAngle = imu.getAngularOrientation().firstAngle;
         return Math.abs(currentAngle - targetAngle) < .005 * Math.PI;
-
     }
 
     void initialize() {
@@ -296,11 +257,9 @@ public class StarterAuto extends LinearOpMode {
         colorBR = hardwareMap.colorSensor.get("colorBR");
         colorBL = hardwareMap.colorSensor.get("colorBL");
 
-
         grabbaServo = hardwareMap.servo.get("grabbaServo");
         armuptouch = hardwareMap.touchSensor.get("armuptouch");
         wristServo = hardwareMap.servo.get("wristServo");
-
 
         stringMotor = hardwareMap.get(DcMotor.class, "stringMotor");
         armMotor = hardwareMap.get(DcMotor.class, "armMotor");
@@ -317,17 +276,13 @@ public class StarterAuto extends LinearOpMode {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         imu.initialize(params);
-
-
     }
 
     // picking up = arm pot bigger
-// negative power to pick up - ARM
-// SPEED ALWAYS POSITIVE
-    void armpotTurn(double targVolt) {
+    // negative power to pick up - ARM
+    void armPotTurn(double targVolt) {
         telemetry.addData("armturn", armpot.getVoltage());
         telemetry.update();
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
@@ -335,7 +290,6 @@ public class StarterAuto extends LinearOpMode {
             packet.put("volt", armpot.getVoltage());
             dashboard.sendTelemetryPacket(packet);
             double power = Math.signum(armpot.getVoltage() - targVolt);
-
 
             if (power == 1 && (armuptouch.isPressed())) {
                 break;
@@ -354,13 +308,10 @@ public class StarterAuto extends LinearOpMode {
         armMotor.setPower(0);
     }
 
-
-    void armrecordTurn(double targVolt, double speed) {
-
+    void armSync(double targVolt, double speed) {
         telemetry.addData("armturn", armpot.getVoltage());
         telemetry.update();
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
-
             TelemetryPacket packet = new TelemetryPacket();
             packet.put("volt", armpot.getVoltage());
             dashboard.sendTelemetryPacket(packet);
@@ -378,9 +329,8 @@ public class StarterAuto extends LinearOpMode {
         armMotor.setPower(0);
     }
 
-
-    //negative power to go out
-    void stringpotTurn(double targetVolt) {
+    // negative power to go out
+    void stringSync(double targetVolt) {
         telemetry.addData("stringturn", stringpot.getVoltage());
         telemetry.update();
         while (opModeIsActive() && Math.abs(stringpot.getVoltage() - targetVolt) >= 0.01) {
@@ -393,7 +343,6 @@ public class StarterAuto extends LinearOpMode {
             } else {
                 if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
                     power *= 0.5;
-
                 } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
                     power *= 0.6;
                 }
@@ -416,8 +365,6 @@ public class StarterAuto extends LinearOpMode {
             armMotor.setPower(0.4);
         }
         armMotor.setPower(0);
-
-
     }
 
     void stringHome() {
@@ -427,86 +374,68 @@ public class StarterAuto extends LinearOpMode {
         stringMotor.setPower(0);
     }
 
-
     void scoreMiddlePole() {
-
         double time = getRuntime();
-
-
         TelemetryPacket packet = new TelemetryPacket();
         packet.put("volts", armpot.getVoltage());
         dashboard.sendTelemetryPacket(packet);
+
         // Turn arm to initial drop
         grabbaServo.setPosition(1);
-        armpotTurn(1.542);
+        armPotTurn(1.542);
         sleep(100);
-
 
         if (getRuntime() - time > 15) {
             return;
         }
 
         // Extend
-
         wristServo.setPosition(0);
-
-        stringpotTurn(0.368);
+        stringSync(0.368);
         sleep(200);
 
-
         if (getRuntime() - time > 15) {
             return;
         }
 
-
-        armpotTurn(1.7);
+        armPotTurn(1.7);
         sleep(700);
 
-
         if (getRuntime() - time > 15) {
             return;
         }
-
 
         grabbaServo.setPosition(0.3);
         sleep(700);
 
-
         if (getRuntime() - time > 15) {
             return;
         }
 
-
-        armpotTurn(1.550);
+        armPotTurn(1.550);
         sleep(200);
 
-
         if (getRuntime() - time > 15) {
             return;
         }
-
 
         returnHome();
         sleep(100);
-
-
     }
 
-
-    boolean stringasync(double targetVolt) {
+    boolean stringAsync(double targetVolt) {
         double power = Math.signum(targetVolt - stringpot.getVoltage());
-       if (Math.abs(stringpot.getVoltage() - targetVolt) <= 0.01){
-           stringMotor.setPower(0);
-           return true;
-       }
+        if (Math.abs(stringpot.getVoltage() - targetVolt) <= 0.01) {
+            stringMotor.setPower(0);
+            return true;
+        }
         if (power == -1 && (stringpot.getVoltage() <= VOLTSSTRINGUP)) {
-            stringnobackdrive();
+            stringNoBackDrive();
         } else if (power == 1 && (stringpot.getVoltage() > VOLTSSTRINGDOWN)) {
-            stringnobackdrive();
+            stringNoBackDrive();
         } else {
             if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
                 power *= 0.5;
-
             } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
                 power *= 0.6;
             }
@@ -515,8 +444,7 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
-
-    boolean armasync(double targVolt) {
+    boolean armAsync(double targVolt) {
         double power = Math.signum(armpot.getVoltage() - targVolt);
         if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
             armMotor.setPower(0);
@@ -538,14 +466,13 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
-    void stringnobackdrive() {
+    void stringNoBackDrive() {
         if (armpot.getVoltage() > 2) {
             stringMotor.setPower(0);
         } else {
             stringMotor.setPower(-0.1);
         }
     }
-
 
     void turnRobot(double angle, boolean clockwise) {
         double directionalSpeed = clockwise ? 1 : -1;
@@ -572,7 +499,6 @@ public class StarterAuto extends LinearOpMode {
         frontRight.setPower(0);
         backRight.setPower(0);
         frontLeft.setPower(0);
-
     }
 
     void imuAngle() {
@@ -583,7 +509,6 @@ public class StarterAuto extends LinearOpMode {
         packet.put("IMU Angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
     }
-
 
     @Override
     public void runOpMode() {
