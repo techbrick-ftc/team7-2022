@@ -177,7 +177,7 @@ public class MainTeleOp extends StarterAuto {
             }
             if (currentState == states.Align) {
                 boolean armDone = armAsync(armDropPos + 0.3);
-                //boolean stringDone = stringAsync(stringDropPos);
+
                 if (armDone) {
                     currentState = states.Release;
                 }
