@@ -64,10 +64,11 @@ public class AutoStraight extends StarterAuto {
 
         drive.followTrajectory(traj1);
         drive.turn(Math.toRadians(74));
-
-        drive.turn(Math.toRadians(-74));
-        drive.followTrajectory(endingStraight);
         sleep(10000);
+        drive.turn(Math.toRadians(-74));
+
+        drive.followTrajectory(endingStraight);
+
         if (tag == 1) {
             drive.followTrajectory(endingLeft);
             packet.put("tag", tag);
