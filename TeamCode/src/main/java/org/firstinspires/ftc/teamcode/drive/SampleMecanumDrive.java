@@ -1,5 +1,17 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -21,7 +33,6 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -36,49 +47,38 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
-
 /*
  * Simple mecanum drive hardware implementation for REV hardware.
  */
 @Config
 public class SampleMecanumDrive extends MecanumDrive {
-    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
-    public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
+    public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(2, 0, 0);
+    public static PIDCoefficients HEADING_PID = new PIDCoefficients(1.8, 0, 0);
 
-    public static double LATERAL_MULTIPLIER = 1;
+    public static double LATERAL_MULTIPLIER = 59.4294081753308/51.5;
 
     public static double VX_WEIGHT = 1;
     public static double VY_WEIGHT = 1;
     public static double OMEGA_WEIGHT = 1;
 
-    private TrajectorySequenceRunner trajectorySequenceRunner;
+    private final TrajectorySequenceRunner trajectorySequenceRunner;
 
     private static final TrajectoryVelocityConstraint VEL_CONSTRAINT = getVelocityConstraint(MAX_VEL, MAX_ANG_VEL, TRACK_WIDTH);
     private static final TrajectoryAccelerationConstraint ACCEL_CONSTRAINT = getAccelerationConstraint(MAX_ACCEL);
 
-    private TrajectoryFollower follower;
+    private final DcMotorEx leftFront;
+    private final DcMotorEx leftRear;
+    private final DcMotorEx rightRear;
+    private final DcMotorEx rightFront;
+    private final List<DcMotorEx> motors;
 
-    private DcMotorEx leftFront, leftRear, rightRear, rightFront;
-    private List<DcMotorEx> motors;
-
-    private BNO055IMU imu;
-    private VoltageSensor batteryVoltageSensor;
+    private final BNO055IMU imu;
+    private final VoltageSensor batteryVoltageSensor;
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
-        follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
+        TrajectoryFollower follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
                 new Pose2d(0.5, 0.5, Math.toRadians(5.0)), 0.5);
 
         LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
@@ -117,13 +117,10 @@ public class SampleMecanumDrive extends MecanumDrive {
         // For example, if +Y in this diagram faces downwards, you would use AxisDirection.NEG_Y.
         // BNO055IMUUtil.remapZAxis(imu, AxisDirection.NEG_Y);
 
-        leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        leftRear = hardwareMap.get(DcMotorEx.class, "backLeft");
-        rightRear = hardwareMap.get(DcMotorEx.class, "backRight");
-        rightFront = hardwareMap.get(DcMotorEx.class, "frontRight");
-
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightRear.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftFront = hardwareMap.get(DcMotorEx.class, "frontRight");
+        leftRear = hardwareMap.get(DcMotorEx.class, "backRight");
+        rightRear = hardwareMap.get(DcMotorEx.class, "backLeft");
+        rightFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
 
@@ -144,7 +141,8 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
 
         // TODO: reverse any motors using DcMotor.setDirection()
-
+        rightFront.setDirection(DcMotor.Direction.REVERSE);
+        rightRear.setDirection(DcMotor.Direction.REVERSE);
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
 

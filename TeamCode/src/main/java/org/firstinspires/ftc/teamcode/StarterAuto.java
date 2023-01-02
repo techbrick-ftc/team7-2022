@@ -128,7 +128,7 @@ public class StarterAuto extends LinearOpMode {
         backRight.setPower(-power - difference);
     }
 
-    void motorsStop() {
+    protected void motorsStop() {
         backRight.setPower(0);
         backLeft.setPower(0);
         frontLeft.setPower(0);
@@ -149,7 +149,7 @@ public class StarterAuto extends LinearOpMode {
         }
     }
 
-    void initAprilTags() {
+    protected void initAprilTags() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         aprilTagDetectionPipeline = new AprilTagDetectionPipeline(tagsize, fx, fy, cx, cy);
@@ -171,7 +171,7 @@ public class StarterAuto extends LinearOpMode {
         FtcDashboard.getInstance().startCameraStream(camera, 0);
     }
 
-    int getAprilTag(double timeOut) {
+    protected int getAprilTag(double timeOut) {
         ArrayList<AprilTagDetection> detections = aprilTagDetectionPipeline.getDetectionsUpdate();
         FtcDashboard dashboard = FtcDashboard.getInstance();
         int lastIDSeen = 0;
@@ -246,7 +246,7 @@ public class StarterAuto extends LinearOpMode {
         return Math.abs(currentAngle - targetAngle) < .005 * Math.PI;
     }
 
-    void initialize() {
+    protected void initialize() {
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
@@ -482,7 +482,7 @@ public class StarterAuto extends LinearOpMode {
         frontLeft.setPower(0);
     }
 
-    void imuAngle() {
+    protected void imuAngle() {
         telemetry.addData("IMU Angle", imu.getAngularOrientation().firstAngle);
         telemetry.update();
 
