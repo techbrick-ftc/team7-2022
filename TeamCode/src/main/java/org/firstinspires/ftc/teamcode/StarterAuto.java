@@ -500,7 +500,7 @@ public class StarterAuto extends LinearOpMode {
         grabbaServo.setPosition(0.3);
     }
 
-    void grabbaClose() {
+    protected void grabbaClose() {
         grabbaServo.setPosition(1);
     }
 
