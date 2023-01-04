@@ -43,7 +43,7 @@ public class ArmCycle extends StarterAuto {
         boolean armDone = false;
         boolean stringDone = false;
         wristServo.setPosition(0);
-        while(opModeIsActive() && !armDone && !stringDone){
+        while (opModeIsActive() && !armDone && !stringDone) {
             armDone = armAsync(armPick1 - 0.5);
             stringDone = stringAsync(stringPick1);
         }
@@ -51,7 +51,7 @@ public class ArmCycle extends StarterAuto {
         //Grab
         boolean armDone2 = false;
         grabbaOpen();
-        while(opModeIsActive() && !armDone2){
+        while (opModeIsActive() && !armDone2) {
             armDone2 = armAsync(armPick1);
         }
         sleep(200);
@@ -59,22 +59,21 @@ public class ArmCycle extends StarterAuto {
         sleep(200);
 
 
-
         boolean armDone3 = false;
         wristServo.setPosition(0.94);
-        while(opModeIsActive() && !armDone3){
-            armDone3 = armAsync(armDrop+0.3);
+        while (opModeIsActive() && !armDone3) {
+            armDone3 = armAsync(armDrop + 0.3);
         }
 
 
         boolean armDone4 = false;
         boolean stringDone4 = false;
 
-        while(opModeIsActive() && !armDone4 && !stringDone4){
+        while (opModeIsActive() && !armDone4 && !stringDone4) {
             armDone4 = armAsync(armDrop);
             stringDone4 = stringAsync(stringDrop);
         }
         grabbaOpen();
-        while(opModeIsActive());
+        while (opModeIsActive());
     }
 }
