@@ -61,7 +61,7 @@ public class StarterAuto extends LinearOpMode {
     final double VOLTSSTRINGUP = 0.069;
     final double VOLTSSTRINGDOWN = 1.454;
     final double TICKSPERBLOCK = 805;   // ~400 per foot
-    final double ARMROTATEMAXVOLT = 2.5;
+    final double ARMROTATEMAXVOLT = 2.3;
     final double ARMVOLTSMID = 1.05;
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
     public DcMotor frontLeft;
@@ -251,8 +251,9 @@ public class StarterAuto extends LinearOpMode {
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
         backRight = hardwareMap.get(DcMotor.class, "backRight");
-        colorFR = hardwareMap.colorSensor.get("colorFR");
 
+
+        colorFR = hardwareMap.colorSensor.get("colorFR");
         colorFL = hardwareMap.colorSensor.get("colorFL");
         colorBR = hardwareMap.colorSensor.get("colorBR");
         colorBL = hardwareMap.colorSensor.get("colorBL");
@@ -436,10 +437,10 @@ public class StarterAuto extends LinearOpMode {
         } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
             armMotor.setPower(0);
         } else {
-            if (Math.abs(armpot.getVoltage() - targVolt) < .1) {
-                power *= 0.5;
-            } else if (Math.abs(armpot.getVoltage() - targVolt) < .2) {
-                power *= 0.6;
+            if (Math.abs(armpot.getVoltage() - targVolt) < .2) {
+                power *= 0.3;
+            } else if (Math.abs(armpot.getVoltage() - targVolt) < .4) {
+                power *= 0.4;
             }
             power = Range.clip(power, -0.8, 0.8);
             armMotor.setPower(power);
@@ -490,6 +491,18 @@ public class StarterAuto extends LinearOpMode {
         packet.put("IMU Angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
     }
+
+    void grabbaOpen() {
+        grabbaServo.setPosition(0.3);
+    }
+
+    void grabbaClose() {
+        grabbaServo.setPosition(1);
+    }
+
+
+
+
 
     @Override
     public void runOpMode() {

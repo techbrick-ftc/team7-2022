@@ -50,12 +50,14 @@ public class ArmCycle extends StarterAuto {
 
         //Grab
         boolean armDone2 = false;
-        grabbaServo.setPosition(0.3);
+        grabbaOpen();
         while(opModeIsActive() && !armDone2){
             armDone2 = armAsync(armPick1);
         }
-        grabbaServo.setPosition(1);
-        sleep(100);
+        sleep(200);
+        grabbaClose();
+        sleep(200);
+
 
 
         boolean armDone3 = false;
@@ -72,7 +74,7 @@ public class ArmCycle extends StarterAuto {
             armDone4 = armAsync(armDrop);
             stringDone4 = stringAsync(stringDrop);
         }
-        grabbaServo.setPosition(0.3);
-
+        grabbaOpen();
+        while(opModeIsActive());
     }
 }
