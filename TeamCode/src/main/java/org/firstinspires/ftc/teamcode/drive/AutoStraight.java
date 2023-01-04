@@ -24,6 +24,25 @@ public class AutoStraight extends StarterAuto {
         packet.addLine("id before");
         dashboard.sendTelemetryPacket(packet);
 
+        double armDrop = 0.749;
+        double stringDrop = 0.974;
+
+        double armPicks [] = {2.041,2.105,2.145,2.152,2.23};
+        double stringPicks [] = {0.641,0.644,0.642,0.649,0.658};
+
+        boolean armDone0 = false;
+        boolean stringDone0 = false;
+
+        boolean armDoneFirst = false;
+
+
+
+
+
+
+
+
+
 
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
@@ -64,7 +83,27 @@ public class AutoStraight extends StarterAuto {
 
         drive.followTrajectory(traj1);
         drive.turn(Math.toRadians(74));
-        sleep(10000);
+        sleep(100); // PLACE CONES AFTER SLEEP
+
+        while (opModeIsActive() && !armDoneFirst) {
+            armDoneFirst = armAsync(armDrop + 0.25, false);
+        }
+
+        while(opModeIsActive() && (!armDone0 || !stringDone0)){
+            armDone0 = armAsync(armDrop, true);
+            stringDone0 = stringAsync(stringDrop);
+        }
+        grabbaOpen();
+
+
+
+
+
+
+
+
+
+
         drive.turn(Math.toRadians(-74));
 
         drive.followTrajectory(endingStraight);
@@ -87,10 +126,6 @@ public class AutoStraight extends StarterAuto {
             dashboard.sendTelemetryPacket(packet);
             motorsStop();
             sleep(1000);
-        }
-        else
-        {
-
         }
     }
 }

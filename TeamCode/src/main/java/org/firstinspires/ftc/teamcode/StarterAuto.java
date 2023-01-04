@@ -19,6 +19,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 
 import java.util.ArrayList;
+import java.lang.Math;
 /*
 Configurations:
 Expansion Hub:
@@ -404,7 +405,7 @@ public class StarterAuto extends LinearOpMode {
         sleep(100);
     }
 
-    boolean stringAsync(double targetVolt) {
+    protected boolean stringAsync(double targetVolt) {
         double power = Math.signum(targetVolt - stringpot.getVoltage());
         if (Math.abs(stringpot.getVoltage() - targetVolt) <= 0.02) {
             stringNoBackDrive();
@@ -426,7 +427,7 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
-    boolean armAsync(double targVolt) {
+    protected boolean armAsync(double targVolt, boolean slowDown) {
         double power = Math.signum(armpot.getVoltage() - targVolt);
         if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
             armMotor.setPower(0);
@@ -437,13 +438,16 @@ public class StarterAuto extends LinearOpMode {
         } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
             armMotor.setPower(0);
         } else {
-            if (Math.abs(armpot.getVoltage() - targVolt) < .2) {
-                power *= 0.3;
-            } else if (Math.abs(armpot.getVoltage() - targVolt) < .4) {
-                power *= 0.4;
+            if(slowDown) {
+                if (Math.abs(armpot.getVoltage() - targVolt) < .2) {
+                    power *= 0.3;
+                } else if (Math.abs(armpot.getVoltage() - targVolt) < .4) {
+                    power *= 0.4;
+                }
             }
-            power = Range.clip(power, -0.8, 0.8);
+            power = Range.clip(power, -0.9, 0.9);
             armMotor.setPower(power);
+
         }
         return false;
     }
@@ -492,7 +496,7 @@ public class StarterAuto extends LinearOpMode {
         dashboard.sendTelemetryPacket(packet);
     }
 
-    void grabbaOpen() {
+    protected void grabbaOpen() {
         grabbaServo.setPosition(0.3);
     }
 

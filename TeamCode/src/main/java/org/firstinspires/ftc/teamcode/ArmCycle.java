@@ -21,59 +21,67 @@ public class ArmCycle extends StarterAuto {
         initialize();
 
         waitForStart();
-        double armDrop = 0.772;
-        double stringDrop = 0.936;
+        double armDrop = 0.749;
+        double stringDrop = 0.974;
 
-        double armPick1 = 2.064;
-        double stringPick1 = 0.641;
+        double armPicks [] = {2.041,2.105,2.145,2.152,2.23};
+        double stringPicks [] = {0.641,0.644,0.642,0.649,0.658};
 
-        double armPick2 = 2.105;
-        double stringPick2 = 0.644;
+        boolean armDone0 = false;
+        boolean stringDone0 = false;
 
-        double armPick3 = 2.145;
-        double stringPick3 = 0.642;
+        boolean armDoneFirst = false;
 
-        double armPick4 = 2.152;
-        double stringPick4 = 0.649;
-
-        double armPick5 = 2.23;
-        double stringPick5 = 0.658;
-
-        //Grab Align
-        boolean armDone = false;
-        boolean stringDone = false;
-        wristServo.setPosition(0);
-        while (opModeIsActive() && !armDone && !stringDone) {
-            armDone = armAsync(armPick1 - 0.5);
-            stringDone = stringAsync(stringPick1);
+        while (opModeIsActive() && !armDoneFirst) {
+            armDoneFirst = armAsync(armDrop + 0.25, false);
         }
 
-        //Grab
-        boolean armDone2 = false;
-        grabbaOpen();
-        while (opModeIsActive() && !armDone2) {
-            armDone2 = armAsync(armPick1);
-        }
-        sleep(200);
-        grabbaClose();
-        sleep(200);
-
-
-        boolean armDone3 = false;
-        wristServo.setPosition(0.94);
-        while (opModeIsActive() && !armDone3) {
-            armDone3 = armAsync(armDrop + 0.3);
-        }
-
-
-        boolean armDone4 = false;
-        boolean stringDone4 = false;
-
-        while (opModeIsActive() && !armDone4 && !stringDone4) {
-            armDone4 = armAsync(armDrop);
-            stringDone4 = stringAsync(stringDrop);
+        while(opModeIsActive() && (!armDone0 || !stringDone0)){
+            armDone0 = armAsync(armDrop, true);
+            stringDone0 = stringAsync(stringDrop);
         }
         grabbaOpen();
-        while (opModeIsActive());
+
+        for (int cone = 0; cone<5; cone++) {
+
+            //Grab Align
+            boolean armDone = false;
+            boolean stringDone = false;
+            wristServo.setPosition(0);
+            while (opModeIsActive() && (!armDone || !stringDone)) {
+                armDone = armAsync(armPicks[cone] - 0.5, false);
+                stringDone = stringAsync(stringPicks[cone]);
+            }
+
+            //Grab
+            boolean armDone2 = false;
+            grabbaOpen();
+            while (opModeIsActive() && !armDone2) {
+                armDone2 = armAsync(armPicks[cone], true);
+            }
+            sleep(200);
+            grabbaClose();
+            sleep(200);
+
+
+            boolean armDone3 = false;
+
+            while (opModeIsActive() && !armDone3) {
+                armDone3 = armAsync(armDrop + 0.6, false);
+            }
+            wristServo.setPosition(0.94);
+
+            boolean armDone4 = false;
+            boolean stringDone4 = false;
+
+            while (opModeIsActive() && (!armDone4 || !stringDone4)) {
+                armDone4 = armAsync(armDrop, true);
+                stringDone4 = stringAsync(stringDrop);
+            }
+            armMotor.setPower(0);
+            stringMotor.setPower(0);
+            grabbaOpen();
+            sleep(200);
+        }
     }
 }
