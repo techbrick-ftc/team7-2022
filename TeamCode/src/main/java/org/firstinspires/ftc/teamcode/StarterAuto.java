@@ -338,7 +338,7 @@ public class StarterAuto extends LinearOpMode {
         }
     }
 
-    void returnHome() {
+    protected void returnHome() {
         while (opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN) {
             stringMotor.setPower(0.4);
         }
