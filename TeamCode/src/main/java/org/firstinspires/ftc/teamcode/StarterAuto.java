@@ -339,14 +339,12 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected void returnHome() {
-        while (opModeIsActive() && stringpot.getVoltage() <= VOLTSSTRINGDOWN) {
-            stringMotor.setPower(0.4);
+        boolean stringDone = false;
+        boolean armDone = false;
+        while (opModeIsActive() && (!stringDone || !armDone)) {
+            stringDone = stringAsync(VOLTSSTRINGDOWN);
+            armDone = armAsync(ARMVOLTSMID, false);
         }
-        stringMotor.setPower(0);
-        while (opModeIsActive() && armpot.getVoltage() >= ARMVOLTSMID) {
-            armMotor.setPower(0.4);
-        }
-        armMotor.setPower(0);
     }
 
     void stringHome() {

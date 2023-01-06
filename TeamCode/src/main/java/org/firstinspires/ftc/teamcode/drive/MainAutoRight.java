@@ -6,15 +6,13 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.StarterAuto;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
 @Autonomous
-public class MainAutoLeft extends StarterAuto {
+public class MainAutoRight extends StarterAuto {
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
@@ -34,6 +32,7 @@ public class MainAutoLeft extends StarterAuto {
 
         boolean armDoneFirst = false;
 
+        final double TIMEOUT = 26;
 
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
@@ -47,62 +46,52 @@ public class MainAutoLeft extends StarterAuto {
         int tag = getAprilTag(5);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        // We want to start the bot at x: -36, y: -60, heading: 180 degrees
-        Pose2d startPose = new Pose2d(-36, -61.5, Math.toRadians(90));
+        // We want to start the bot at x: 36, y: -60, heading: 180 degrees
+        Pose2d startPose = new Pose2d(36, -61.5, Math.toRadians(90));
 
         drive.setPoseEstimate(startPose);
 
-        double slowerVelocity = 1000;
-        // 80
+        double slowerVelocity = 65;
 
-        Trajectory traj1 = drive.trajectoryBuilder(startPose)
-                .strafeTo(new Vector2d(-36, -19), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+        Trajectory traj1 = drive.trajectoryBuilder(startPose, false)
+
+                .strafeTo(new Vector2d(36, -19),SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory endingStraight = drive.trajectoryBuilder(traj1.end(), false)
-                .strafeTo(new Vector2d(-36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .strafeTo(new Vector2d(36, -15))
                 .build();
 
         Trajectory endingLeft = drive.trajectoryBuilder(endingStraight.end(), false)
-                .strafeTo(new Vector2d(-12, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .strafeTo(new Vector2d(12, -15))
                 .build();
         Trajectory endingRight = drive.trajectoryBuilder(endingStraight.end(), false)
-                .strafeTo(new Vector2d(-60, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
-                        SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .strafeTo(new Vector2d(60, -15))
                 .build();
-
-        double timeout = 25;
-        if (tag == 2) {
-            timeout = 29;
-        }
 
         waitForStart();
 
-        grabbaClose();
         if (isStopRequested()) return;
-
 
         drive.followTrajectory(traj1);
         drive.turn(Math.toRadians(74));
-
+        sleep(100); // PLACE CONES AFTER SLEEP
         wristServo.setPosition(0.94);
         // Goes and drops pre-loaded cone
-        while (opModeIsActive() && (!armDoneFirst || !stringDone0)) {
-            armDoneFirst = armAsync(armDrop + 0.13, true);
-            stringDone0 = stringAsync(stringDrop);
+        while (opModeIsActive() && !armDoneFirst) {
+            armDoneFirst = armAsync(armDrop + 0.25, false);
         }
 
-        while (opModeIsActive() && !armDone0) {
+
+        while (opModeIsActive() && (!armDone0 || !stringDone0)) {
             armDone0 = armAsync(armDrop, true);
+            stringDone0 = stringAsync(stringDrop);
         }
         grabbaOpen();
-        sleep(100);
 
         // Cycles with cones
         for (int cone = 0; cone < 5; cone++) {
-            if (getRuntime() >= timeout) {
+            if (getRuntime()>=TIMEOUT){
                 returnHome();
                 grabbaClose();
                 break;
@@ -146,7 +135,7 @@ public class MainAutoLeft extends StarterAuto {
             sleep(200);
         }
 
-//        drive.turn(Math.toRadians(-74));
+        drive.turn(Math.toRadians(-74));
 
         drive.followTrajectory(endingStraight);
 
