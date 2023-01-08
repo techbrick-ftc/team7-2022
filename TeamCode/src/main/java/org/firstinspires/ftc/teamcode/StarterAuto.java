@@ -49,7 +49,9 @@ Expansion Hub:
 
   Analog 2: armpot
 
-   Servo Port 5:grabbaServo
+  Servo Port 5:grabbaServo
+
+
  */
 
 public class StarterAuto extends LinearOpMode {
@@ -343,7 +345,7 @@ public class StarterAuto extends LinearOpMode {
         boolean armDone = false;
         while (opModeIsActive() && (!stringDone || !armDone)) {
             stringDone = stringAsync(VOLTSSTRINGDOWN);
-            armDone = armAsync(ARMVOLTSMID, false);
+            armDone = armAsync(ARMVOLTSMID, false, 0.9);
         }
     }
 
@@ -415,17 +417,17 @@ public class StarterAuto extends LinearOpMode {
             stringNoBackDrive();
         } else {
             if (Math.abs(stringpot.getVoltage() - targetVolt) < .05) {
-                power *= 0.3;
+                power *= 0.5;
             } else if (Math.abs(stringpot.getVoltage() - targetVolt) < .1) {
-                power *= 0.4;
+                power *= 0.6;
             }
-            power = Range.clip(power, -0.7, 0.7);
+            power = Range.clip(power, -1, 1);
             stringMotor.setPower(power);
         }
         return false;
     }
 
-    protected boolean armAsync(double targVolt, boolean slowDown) {
+    protected boolean armAsync(double targVolt, boolean slowDown, double speed) {
         double power = Math.signum(armpot.getVoltage() - targVolt);
         if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
             armMotor.setPower(0);
@@ -437,13 +439,13 @@ public class StarterAuto extends LinearOpMode {
             armMotor.setPower(0);
         } else {
             if(slowDown) {
-                if (Math.abs(armpot.getVoltage() - targVolt) < .2) {
-                    power *= 0.3;
-                } else if (Math.abs(armpot.getVoltage() - targVolt) < .4) {
+                if (Math.abs(armpot.getVoltage() - targVolt) < .15) {
                     power *= 0.4;
+                } else if (Math.abs(armpot.getVoltage() - targVolt) < .3) {
+                    power *= 0.6;
                 }
             }
-            power = Range.clip(power, -0.9, 0.9);
+            power = Range.clip(power, -speed, speed);
             armMotor.setPower(power);
 
         }

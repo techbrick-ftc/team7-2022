@@ -160,7 +160,7 @@ public class MainTeleOp extends StarterAuto {
 
             }
             if (currentState == states.GrabAlign) {
-                boolean armDone = armAsync(armGrabPos - 0.5,false);
+                boolean armDone = armAsync(armGrabPos - 0.5,false, 0.9);
                 boolean stringDone = stringAsync(stringGrabPos);
                 if (armDone && stringDone) {
                     currentState = states.Grab;
@@ -176,7 +176,7 @@ public class MainTeleOp extends StarterAuto {
                 currentState = states.Align;
             }
             if (currentState == states.Align) {
-                boolean armDone = armAsync(armDropPos + 0.3, false);
+                boolean armDone = armAsync(armDropPos + 0.3, false, 0.7);
 
                 if (armDone) {
                     currentState = states.Release;

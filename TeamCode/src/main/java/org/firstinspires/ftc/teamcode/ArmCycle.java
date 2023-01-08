@@ -33,11 +33,11 @@ public class ArmCycle extends StarterAuto {
         boolean armDoneFirst = false;
 
         while (opModeIsActive() && !armDoneFirst) {
-            armDoneFirst = armAsync(armDrop + 0.25, false);
+            armDoneFirst = armAsync(armDrop + 0.25, false, 1);
         }
 
         while(opModeIsActive() && (!armDone0 || !stringDone0)){
-            armDone0 = armAsync(armDrop, true);
+            armDone0 = armAsync(armDrop, true, 1);
             stringDone0 = stringAsync(stringDrop);
         }
         grabbaOpen();
@@ -49,7 +49,7 @@ public class ArmCycle extends StarterAuto {
             boolean stringDone = false;
             wristServo.setPosition(0);
             while (opModeIsActive() && (!armDone || !stringDone)) {
-                armDone = armAsync(armPicks[cone] - 0.5, false);
+                armDone = armAsync(armPicks[cone] - 0.5, false, 1);
                 stringDone = stringAsync(stringPicks[cone]);
             }
 
@@ -57,7 +57,7 @@ public class ArmCycle extends StarterAuto {
             boolean armDone2 = false;
             grabbaOpen();
             while (opModeIsActive() && !armDone2) {
-                armDone2 = armAsync(armPicks[cone], true);
+                armDone2 = armAsync(armPicks[cone], true, 1);
             }
             sleep(200);
             grabbaClose();
@@ -67,7 +67,7 @@ public class ArmCycle extends StarterAuto {
             boolean armDone3 = false;
 
             while (opModeIsActive() && !armDone3) {
-                armDone3 = armAsync(armDrop + 0.6, false);
+                armDone3 = armAsync(armDrop + 0.6, false, 1);
             }
             wristServo.setPosition(0.94);
 
@@ -75,7 +75,7 @@ public class ArmCycle extends StarterAuto {
             boolean stringDone4 = false;
 
             while (opModeIsActive() && (!armDone4 || !stringDone4)) {
-                armDone4 = armAsync(armDrop, true);
+                armDone4 = armAsync(armDrop, true, 1);
                 stringDone4 = stringAsync(stringDrop);
             }
             armMotor.setPower(0);
