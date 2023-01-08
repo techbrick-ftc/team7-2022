@@ -372,7 +372,7 @@ public class StarterAuto extends LinearOpMode {
         }
 
         // Extend
-        wristServo.setPosition(0);
+        wristPick();
         stringSync(0.368);
         sleep(200);
 
@@ -438,7 +438,7 @@ public class StarterAuto extends LinearOpMode {
         } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
             armMotor.setPower(0);
         } else {
-            if(slowDown) {
+            if (slowDown) {
                 if (Math.abs(armpot.getVoltage() - targVolt) < .15) {
                     power *= 0.4;
                 } else if (Math.abs(armpot.getVoltage() - targVolt) < .3) {
@@ -497,12 +497,24 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected void grabbaOpen() {
-        grabbaServo.setPosition(0.3);
+        grabbaServo.setPosition(1);
+
     }
 
     protected void grabbaClose() {
-        grabbaServo.setPosition(1);
+        grabbaServo.setPosition(0.3);
     }
+
+    protected void wristDrop() {
+        wristServo.setPosition(0.94);
+    }
+
+    protected void wristPick() {
+        wristServo.setPosition(0);
+    }
+
+
+
 
 
 

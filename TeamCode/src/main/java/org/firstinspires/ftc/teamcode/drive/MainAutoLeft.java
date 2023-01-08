@@ -23,11 +23,11 @@ public class MainAutoLeft extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.749;
-        double stringDrop = 0.974;
+        double armDrop = 0.775;
+        double stringDrop = 0.862;
 
-        double armPicks[] = {2.041, 2.105, 2.145, 2.152, 2.23};
-        double stringPicks[] = {0.641, 0.644, 0.642, 0.649, 0.658};
+        double armPicks[] = {1.98, 2.031, 2.056, 2.123, 2.156};
+        double stringPicks[] = {0.695, 0.709, 0.715, 0.691, 0.678};
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
@@ -95,8 +95,9 @@ public class MainAutoLeft extends StarterAuto {
             drive.update();
         }
         drive.turn(Math.toRadians(74));
+        stringMotor.setPower(0.1);
 
-        wristServo.setPosition(0.94);
+        wristDrop();
         // Goes and drops pre-loaded cone
 //        while (opModeIsActive() && (!armDoneFirst || !stringDone0)) {
 //            armDoneFirst = armAsync(armDrop + 0.18, true, 1);
@@ -121,7 +122,7 @@ public class MainAutoLeft extends StarterAuto {
             //Grab Align
             boolean armDone = false;
             boolean stringDone = false;
-            wristServo.setPosition(0);
+            wristPick();
             while (opModeIsActive() && (!armDone || !stringDone)) {
                 armDone = armAsync(armPicks[cone] - 0.5, true, 1);
                 stringDone = stringAsync(stringPicks[cone]);
@@ -158,7 +159,7 @@ public class MainAutoLeft extends StarterAuto {
                     break;
                 }
             }
-            wristServo.setPosition(0.94);
+            wristDrop();
 
             boolean armDone4 = false;
             boolean stringDone4 = false;

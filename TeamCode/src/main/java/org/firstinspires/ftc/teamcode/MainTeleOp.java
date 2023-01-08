@@ -125,13 +125,13 @@ public class MainTeleOp extends StarterAuto {
 
             if (cur2.a && !previousGamepad2.a) {
                 if (!grabberOpen) {
-                    grabbaServo.setPosition(0.3);
+                    grabbaOpen();
                     grabberOpen = true;
                     armDropPos = armpot.getVoltage();
                     stringDropPos = stringpot.getVoltage();
 
                 } else {
-                    grabbaServo.setPosition(1);
+                    grabbaClose();
                     grabberOpen = false;
                     armGrabPos = armpot.getVoltage();
                     stringGrabPos = stringpot.getVoltage();
@@ -141,7 +141,7 @@ public class MainTeleOp extends StarterAuto {
             if (!cur2.y && previousGamepad2.y) {
                 if (currentState == states.Manual) {
                     currentState = states.GrabAlign;
-                    wristServo.setPosition(0);
+                    wristPick();
                 } else if (currentState == states.Pause) {
                     currentState = pausedState;
                 }
@@ -167,12 +167,11 @@ public class MainTeleOp extends StarterAuto {
                 }
             }
             if (currentState == states.Grab) {
-                grabbaServo.setPosition(0.3);
+                grabbaOpen();
                 armSync(armGrabPos);
+                grabbaClose();
                 sleep(200);
-                grabbaServo.setPosition(1);
-                sleep(200);
-                wristServo.setPosition(0.94);
+                wristDrop();
                 currentState = states.Align;
             }
             if (currentState == states.Align) {
@@ -186,10 +185,10 @@ public class MainTeleOp extends StarterAuto {
                 stringSync(stringDropPos);
                 armSync(armDropPos);
                 sleep(200);
-                grabbaServo.setPosition(0.3);
+                grabbaOpen();
                 sleep(200);
                 armSync(1);
-                wristServo.setPosition(0);
+                wristPick();
                 currentState = states.Manual;
             }
             if (currentState == states.Pause) {

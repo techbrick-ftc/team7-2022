@@ -57,7 +57,7 @@ public class MainAutoRight extends StarterAuto {
         // 80
 
         Trajectory traj1 = drive.trajectoryBuilder(startPose)
-                .strafeTo(new Vector2d(36, -19), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                .strafeTo(new Vector2d(36, -24.25), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory endingStraight = drive.trajectoryBuilder(traj1.end(),Math.toRadians(164))
@@ -94,114 +94,114 @@ public class MainAutoRight extends StarterAuto {
             }
             drive.update();
         }
-        drive.turn(Math.toRadians(74));
-
-        wristServo.setPosition(0.94);
-        // Goes and drops pre-loaded cone
-//        while (opModeIsActive() && (!armDoneFirst || !stringDone0)) {
-//            armDoneFirst = armAsync(armDrop + 0.18, true, 1);
-//            stringDone0 = stringAsync(stringDrop);
+//        drive.turn(Math.toRadians(74));
+//
+//        wristServo.setPosition(0.94);
+//        // Goes and drops pre-loaded cone
+////        while (opModeIsActive() && (!armDoneFirst || !stringDone0)) {
+////            armDoneFirst = armAsync(armDrop + 0.18, true, 1);
+////            stringDone0 = stringAsync(stringDrop);
+////        }
+//
+//        boolean stringDoneFirst = false;
+//        while (opModeIsActive() && (!armDone0 || !stringDoneFirst)) {
+//            armDone0 = armAsync(armDrop, false, .5);
+//            stringDoneFirst = stringAsync(stringDrop);
 //        }
-
-        boolean stringDoneFirst = false;
-        while (opModeIsActive() && (!armDone0 || !stringDoneFirst)) {
-            armDone0 = armAsync(armDrop, false, .5);
-            stringDoneFirst = stringAsync(stringDrop);
-        }
-        grabbaOpen();
-        sleep(100);
-
-        // Cycles with cones
-        for (int cone = 0; cone < 5; cone++) {
-            if ((getRuntime() - timeStart) >= timeout) {
-                returnHome();
-                grabbaClose();
-                break;
-            }
-            //Grab Align
-            boolean armDone = false;
-            boolean stringDone = false;
-            wristServo.setPosition(0);
-            while (opModeIsActive() && (!armDone || !stringDone)) {
-                armDone = armAsync(armPicks[cone] - 0.5, true, 1);
-                stringDone = stringAsync(stringPicks[cone]);
-                if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    grabbaClose();
-                    break;
-                }
-            }
-
-            //Grab
-            boolean armDone2 = false;
-            grabbaOpen();
-            while (opModeIsActive() && !armDone2) {
-                armDone2 = armAsync(armPicks[cone], true, 0.7);
-                if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    grabbaClose();
-                    break;
-                }
-            }
-//            sleep(100);
-            grabbaClose();
-            sleep(200);
-
-            boolean armDone3 = false;
-
-            // Move to midpoint and flip wrist
-            while (opModeIsActive() && !armDone3) {
-                armDone3 = armAsync(armDrop + 0.6, false, 0.8);
-                if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    grabbaClose();
-                    break;
-                }
-            }
-            wristServo.setPosition(0.94);
-
-            boolean armDone4 = false;
-            boolean stringDone4 = false;
-
-            while (opModeIsActive() && (!armDone4 || !stringDone4)) {
-                armDone4 = armAsync(armDrop, true, 0.7);
-                stringDone4 = stringAsync(stringDrop);
-                if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    grabbaClose();
-                    break;
-                }
-            }
-            armMotor.setPower(0);
-            stringMotor.setPower(0);
-            grabbaOpen();
-            sleep(200);
-        }
-
-//        drive.turn(Math.toRadians(-74));
-
-
-
-        if (tag == 1) {
-            drive.followTrajectory(endingStraight);
-            drive.followTrajectory(endingLeft);
-            packet.put("tag", tag);
-            dashboard.sendTelemetryPacket(packet);
-            motorsStop();
-            sleep(1000);
-        } else if (tag == 2) {
-            packet.put("tag", tag);
-            dashboard.sendTelemetryPacket(packet);
-
-            motorsStop();
-            sleep(1000);
-        } else if (tag == 3) {
-            drive.followTrajectory(endingStraight);
-            drive.followTrajectory(endingRight);
-            packet.put("tag", tag);
-            dashboard.sendTelemetryPacket(packet);
-            motorsStop();
-            sleep(1000);
-        }
+//        grabbaOpen();
+//        sleep(100);
+//
+//        // Cycles with cones
+//        for (int cone = 0; cone < 5; cone++) {
+//            if ((getRuntime() - timeStart) >= timeout) {
+//                returnHome();
+//                grabbaClose();
+//                break;
+//            }
+//            //Grab Align
+//            boolean armDone = false;
+//            boolean stringDone = false;
+//            wristServo.setPosition(0);
+//            while (opModeIsActive() && (!armDone || !stringDone)) {
+//                armDone = armAsync(armPicks[cone] - 0.5, true, 1);
+//                stringDone = stringAsync(stringPicks[cone]);
+//                if ((getRuntime() - timeStart) >= timeout) {
+//                    returnHome();
+//                    grabbaClose();
+//                    break;
+//                }
+//            }
+//
+//            //Grab
+//            boolean armDone2 = false;
+//            grabbaOpen();
+//            while (opModeIsActive() && !armDone2) {
+//                armDone2 = armAsync(armPicks[cone], true, 0.7);
+//                if ((getRuntime() - timeStart) >= timeout) {
+//                    returnHome();
+//                    grabbaClose();
+//                    break;
+//                }
+//            }
+////            sleep(100);
+//            grabbaClose();
+//            sleep(200);
+//
+//            boolean armDone3 = false;
+//
+//            // Move to midpoint and flip wrist
+//            while (opModeIsActive() && !armDone3) {
+//                armDone3 = armAsync(armDrop + 0.6, false, 0.8);
+//                if ((getRuntime() - timeStart) >= timeout) {
+//                    returnHome();
+//                    grabbaClose();
+//                    break;
+//                }
+//            }
+//            wristServo.setPosition(0.94);
+//
+//            boolean armDone4 = false;
+//            boolean stringDone4 = false;
+//
+//            while (opModeIsActive() && (!armDone4 || !stringDone4)) {
+//                armDone4 = armAsync(armDrop, true, 0.7);
+//                stringDone4 = stringAsync(stringDrop);
+//                if ((getRuntime() - timeStart) >= timeout) {
+//                    returnHome();
+//                    grabbaClose();
+//                    break;
+//                }
+//            }
+//            armMotor.setPower(0);
+//            stringMotor.setPower(0);
+//            grabbaOpen();
+//            sleep(200);
+//        }
+//
+////        drive.turn(Math.toRadians(-74));
+//
+//
+//
+//        if (tag == 1) {
+//            drive.followTrajectory(endingStraight);
+//            drive.followTrajectory(endingLeft);
+//            packet.put("tag", tag);
+//            dashboard.sendTelemetryPacket(packet);
+//            motorsStop();
+//            sleep(1000);
+//        } else if (tag == 2) {
+//            packet.put("tag", tag);
+//            dashboard.sendTelemetryPacket(packet);
+//
+//            motorsStop();
+//            sleep(1000);
+//        } else if (tag == 3) {
+//            drive.followTrajectory(endingStraight);
+//            drive.followTrajectory(endingRight);
+//            packet.put("tag", tag);
+//            dashboard.sendTelemetryPacket(packet);
+//            motorsStop();
+//            sleep(1000);
+//        }
     }
 }
