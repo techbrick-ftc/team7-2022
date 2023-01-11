@@ -33,8 +33,8 @@ public class AutoParkingRight extends StarterAuto {
         int tag = getAprilTag(5);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        // We want to start the bot at x: -36, y: -60, heading: 180 degrees
-        Pose2d startPose = new Pose2d(-36, -61.5, Math.toRadians(90));
+        // We want to start the bot at x: 36, y: -60, heading: 180 degrees
+        Pose2d startPose = new Pose2d(36, -61.5, Math.toRadians(90));
 
         drive.setPoseEstimate(startPose);
 
@@ -42,18 +42,18 @@ public class AutoParkingRight extends StarterAuto {
 
         Trajectory traj1 = drive.trajectoryBuilder(startPose, false)
 
-                .strafeTo(new Vector2d(-36, -19),SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                .strafeTo(new Vector2d(36, -19),SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
         Trajectory endingStraight = drive.trajectoryBuilder(traj1.end(), false)
-                .strafeTo(new Vector2d(-36, -15))
+                .strafeTo(new Vector2d(36, -15))
                 .build();
 
         Trajectory endingLeft = drive.trajectoryBuilder(endingStraight.end(), false)
-                .strafeTo(new Vector2d(-12, -15))
+                .strafeTo(new Vector2d(12, -15))
                 .build();
         Trajectory endingRight = drive.trajectoryBuilder(endingStraight.end(), false)
-                .strafeTo(new Vector2d(-60, -15))
+                .strafeTo(new Vector2d(60, -15))
                 .build();
 
         //change for right values^^

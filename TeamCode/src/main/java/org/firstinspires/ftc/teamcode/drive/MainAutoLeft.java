@@ -23,8 +23,8 @@ public class MainAutoLeft extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.775;
-        double stringDrop = 0.862;
+        double armDrop = 0.735;
+        double stringDrop = 0.832;
 
         double armPicks[] = {1.98, 2.031, 2.056, 2.123, 2.156};
         double stringPicks[] = {0.695, 0.709, 0.715, 0.691, 0.678};
@@ -42,6 +42,7 @@ public class MainAutoLeft extends StarterAuto {
         imuAngle();
 
         waitForStart();
+
         double timeStart = getRuntime();
         packet.addLine("id after");
         dashboard.sendTelemetryPacket(packet);
@@ -56,20 +57,22 @@ public class MainAutoLeft extends StarterAuto {
         double slowerVelocity = 68;
         // 80
 
-        Trajectory traj1 = drive.trajectoryBuilder(startPose)
+        TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .strafeTo(new Vector2d(-36, -19), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
+                .turn(Math.toRadians(74))
                 .build();
-        Trajectory endingStraight = drive.trajectoryBuilder(traj1.end(),Math.toRadians(164))
+        TrajectorySequence endingStraight = drive.trajectorySequenceBuilder(traj1.end())
+                .turn(Math.toRadians(-74))
                 .strafeTo(new Vector2d(-36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
-        Trajectory endingLeft = drive.trajectoryBuilder(endingStraight.end(),Math.toRadians(164))
+        Trajectory endingLeft = drive.trajectoryBuilder(endingStraight.end())
                 .strafeTo(new Vector2d(-12, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
-        Trajectory endingRight = drive.trajectoryBuilder(endingStraight.end(),Math.toRadians(164))
+        Trajectory endingRight = drive.trajectoryBuilder(endingStraight.end())
                 .strafeTo(new Vector2d(-60, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
@@ -85,28 +88,23 @@ public class MainAutoLeft extends StarterAuto {
         if (isStopRequested()) return;
 
 
-        drive.followTrajectoryAsync(traj1);
+        drive.followTrajectorySequenceAsync(traj1);
         double timeElap = getRuntime();
         while(opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)){
-            if (getRuntime() - timeElap > 0.5) {
+            if (getRuntime() - timeElap > 0.15) {
                 armDoneFirst = armAsync(armDrop + 0.15, true,1);
                 stringDone0 = stringAsync(stringDrop);
             }
             drive.update();
         }
-        drive.turn(Math.toRadians(74));
+//        drive.turn(Math.toRadians(74));
         stringMotor.setPower(0.1);
 
         wristDrop();
-        // Goes and drops pre-loaded cone
-//        while (opModeIsActive() && (!armDoneFirst || !stringDone0)) {
-//            armDoneFirst = armAsync(armDrop + 0.18, true, 1);
-//            stringDone0 = stringAsync(stringDrop);
-//        }
 
         boolean stringDoneFirst = false;
         while (opModeIsActive() && (!armDone0 || !stringDoneFirst)) {
-            armDone0 = armAsync(armDrop, false, .5);
+            armDone0 = armAsync(armDrop, true, .5);
             stringDoneFirst = stringAsync(stringDrop);
         }
         grabbaOpen();
@@ -115,8 +113,6 @@ public class MainAutoLeft extends StarterAuto {
         // Cycles with cones
         for (int cone = 0; cone < 5; cone++) {
             if ((getRuntime() - timeStart) >= timeout) {
-                returnHome();
-                grabbaClose();
                 break;
             }
             //Grab Align
@@ -127,8 +123,6 @@ public class MainAutoLeft extends StarterAuto {
                 armDone = armAsync(armPicks[cone] - 0.5, true, 1);
                 stringDone = stringAsync(stringPicks[cone]);
                 if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    grabbaClose();
                     break;
                 }
             }
@@ -140,22 +134,23 @@ public class MainAutoLeft extends StarterAuto {
                 armDone2 = armAsync(armPicks[cone], true, 0.7);
                 if ((getRuntime() - timeStart) >= timeout) {
                     returnHome();
-                    grabbaClose();
                     break;
                 }
             }
-//            sleep(100);
+
+            // TODO: Combine grab and grab align
+            sleep(100);
             grabbaClose();
-            sleep(200);
+            sleep(300);
 
             boolean armDone3 = false;
 
             // Move to midpoint and flip wrist
+
             while (opModeIsActive() && !armDone3) {
-                armDone3 = armAsync(armDrop + 0.6, false, 0.8);
+                armDone3 = armAsync(armDrop + 0.8, false, 0.8);
                 if ((getRuntime() - timeStart) >= timeout) {
                     returnHome();
-                    grabbaClose();
                     break;
                 }
             }
@@ -168,8 +163,6 @@ public class MainAutoLeft extends StarterAuto {
                 armDone4 = armAsync(armDrop, true, 0.7);
                 stringDone4 = stringAsync(stringDrop);
                 if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    grabbaClose();
                     break;
                 }
             }
@@ -184,10 +177,9 @@ public class MainAutoLeft extends StarterAuto {
 
 
         if (tag == 1) {
-            drive.followTrajectory(endingStraight);
+//            drive.turn(Math.toRadians(-74));
+            drive.followTrajectorySequence(endingStraight);
             drive.followTrajectory(endingLeft);
-            packet.put("tag", tag);
-            dashboard.sendTelemetryPacket(packet);
             motorsStop();
             sleep(1000);
         } else if (tag == 2) {
@@ -196,8 +188,9 @@ public class MainAutoLeft extends StarterAuto {
 
             motorsStop();
             sleep(1000);
-        } else if (tag == 3) {
-            drive.followTrajectory(endingStraight);
+            } else if (tag == 3) {
+//            drive.turn(Math.toRadians(-74));
+            drive.followTrajectorySequence(endingStraight);
             drive.followTrajectory(endingRight);
             packet.put("tag", tag);
             dashboard.sendTelemetryPacket(packet);
