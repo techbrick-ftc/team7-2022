@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 
-
 @Autonomous(name = "ArmCycle", group = "Auto")
 public class ArmCycle extends StarterAuto {
     TelemetryPacket packet = new TelemetryPacket();

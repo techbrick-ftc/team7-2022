@@ -44,8 +44,6 @@ public class MainAutoLeft extends StarterAuto {
         waitForStart();
 
         double timeStart = getRuntime();
-        packet.addLine("id after");
-        dashboard.sendTelemetryPacket(packet);
         int tag = getAprilTag(5);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -55,7 +53,6 @@ public class MainAutoLeft extends StarterAuto {
         drive.setPoseEstimate(startPose);
 
         double slowerVelocity = 68;
-        // 80
 
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .strafeTo(new Vector2d(-36, -19), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
@@ -67,7 +64,6 @@ public class MainAutoLeft extends StarterAuto {
                 .strafeTo(new Vector2d(-36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
-
         Trajectory endingLeft = drive.trajectoryBuilder(endingStraight.end())
                 .strafeTo(new Vector2d(-12, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
@@ -87,12 +83,11 @@ public class MainAutoLeft extends StarterAuto {
         grabbaClose();
         if (isStopRequested()) return;
 
-
         drive.followTrajectorySequenceAsync(traj1);
         double timeElap = getRuntime();
-        while(opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)){
+        while (opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)) {
             if (getRuntime() - timeElap > 0.15) {
-                armDoneFirst = armAsync(armDrop + 0.15, true,1);
+                armDoneFirst = armAsync(armDrop + 0.15, true, 1);
                 stringDone0 = stringAsync(stringDrop);
             }
             drive.update();
@@ -115,38 +110,41 @@ public class MainAutoLeft extends StarterAuto {
             if ((getRuntime() - timeStart) >= timeout) {
                 break;
             }
-            //Grab Align
+
             boolean armDone = false;
             boolean stringDone = false;
-            wristPick();
-            while (opModeIsActive() && (!armDone || !stringDone)) {
-                armDone = armAsync(armPicks[cone] - 0.5, true, 1);
-                stringDone = stringAsync(stringPicks[cone]);
-                if ((getRuntime() - timeStart) >= timeout) {
-                    break;
-                }
-            }
-
-            //Grab
             boolean armDone2 = false;
+            boolean armDone3 = false;
+            boolean armDone4 = false;
+            boolean stringDone4 = false;
+
+            //Grab Align & Grab
+            wristPick();
             grabbaOpen();
-            while (opModeIsActive() && !armDone2) {
-                armDone2 = armAsync(armPicks[cone], true, 0.7);
+            while (opModeIsActive() && (!armDone || !stringDone)) {
+                armDone = armAsync(armPicks[cone], true, 1);
+                stringDone = stringAsync(stringPicks[cone]);
                 if ((getRuntime() - timeStart) >= timeout) {
                     returnHome();
                     break;
                 }
             }
 
-            // TODO: Combine grab and grab align
+            //Grab
+//            grabbaOpen();
+//            while (opModeIsActive() && !armDone2) {
+//                armDone2 = armAsync(armPicks[cone], true, 0.7);
+//                if ((getRuntime() - timeStart) >= timeout) {
+//                    returnHome();
+//                    break;
+//                }
+//            }
+
             sleep(100);
             grabbaClose();
             sleep(300);
 
-            boolean armDone3 = false;
-
             // Move to midpoint and flip wrist
-
             while (opModeIsActive() && !armDone3) {
                 armDone3 = armAsync(armDrop + 0.8, false, 0.8);
                 if ((getRuntime() - timeStart) >= timeout) {
@@ -155,45 +153,30 @@ public class MainAutoLeft extends StarterAuto {
                 }
             }
             wristDrop();
-
-            boolean armDone4 = false;
-            boolean stringDone4 = false;
-
             while (opModeIsActive() && (!armDone4 || !stringDone4)) {
-                armDone4 = armAsync(armDrop, true, 0.7);
+                armDone4 = armAsync(armDrop, true, 0.8);
                 stringDone4 = stringAsync(stringDrop);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break;
                 }
             }
-            armMotor.setPower(0);
-            stringMotor.setPower(0);
             grabbaOpen();
+//            armMotor.setPower(0);
+//            stringMotor.setPower(0);
             sleep(200);
         }
 
-//        drive.turn(Math.toRadians(-74));
-
-
-
         if (tag == 1) {
-//            drive.turn(Math.toRadians(-74));
             drive.followTrajectorySequence(endingStraight);
             drive.followTrajectory(endingLeft);
             motorsStop();
             sleep(1000);
         } else if (tag == 2) {
-            packet.put("tag", tag);
-            dashboard.sendTelemetryPacket(packet);
-
             motorsStop();
             sleep(1000);
-            } else if (tag == 3) {
-//            drive.turn(Math.toRadians(-74));
+        } else if (tag == 3) {
             drive.followTrajectorySequence(endingStraight);
             drive.followTrajectory(endingRight);
-            packet.put("tag", tag);
-            dashboard.sendTelemetryPacket(packet);
             motorsStop();
             sleep(1000);
         }

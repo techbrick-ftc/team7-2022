@@ -447,7 +447,6 @@ public class StarterAuto extends LinearOpMode {
             }
             power = Range.clip(power, -speed, speed);
             armMotor.setPower(power);
-
         }
         return false;
     }
@@ -512,12 +511,6 @@ public class StarterAuto extends LinearOpMode {
     protected void wristPick() {
         wristServo.setPosition(0);
     }
-
-
-
-
-
-
 
 
     @Override
