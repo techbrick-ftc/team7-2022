@@ -61,8 +61,8 @@ public class StarterAuto extends LinearOpMode {
     final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
     final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
     final double VOLTSPERTRIP = 1.438; // may need to change
-    final double VOLTSSTRINGUP = 0.069;
-    final double VOLTSSTRINGDOWN = 1.454;
+    final double VOLTSSTRINGUP = 0.192;
+    final double VOLTSSTRINGDOWN = 1.588;
     final double TICKSPERBLOCK = 805;   // ~400 per foot
     final double ARMROTATEMAXVOLT = 2.3;
     final double ARMVOLTSMID = 1.05;
@@ -359,8 +359,7 @@ public class StarterAuto extends LinearOpMode {
     void scoreMiddlePole() {
         double time = getRuntime();
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("volts", armpot.getVoltage());
-        dashboard.sendTelemetryPacket(packet);
+
 
         // Turn arm to initial drop
         grabbaServo.setPosition(1);
@@ -497,7 +496,6 @@ public class StarterAuto extends LinearOpMode {
 
     protected void grabbaOpen() {
         grabbaServo.setPosition(1);
-
     }
 
     protected void grabbaClose() {
@@ -505,7 +503,7 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected void wristDrop() {
-        wristServo.setPosition(0.94);
+        wristServo.setPosition(0.92);
     }
 
     protected void wristPick() {

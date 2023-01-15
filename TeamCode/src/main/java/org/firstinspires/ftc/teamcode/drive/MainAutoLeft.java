@@ -24,22 +24,29 @@ public class MainAutoLeft extends StarterAuto {
         initAprilTags();
 
         double armDrop = 0.735;
-        double stringDrop = 0.832;
+        double stringDrop = 0.97;
 
-        double armPicks[] = {1.98, 2.031, 2.056, 2.123, 2.156};
-        double stringPicks[] = {0.695, 0.709, 0.715, 0.691, 0.678};
+
+        // add .05 to go down
+        double armPicks[] = {1.97, 2.035, 2.115, 2.1, 2.15};
+        double stringPicks[] = {0.794, 0.781, 0.764, 0.753, 0.749};
+
+
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
 
         boolean armDoneFirst = false;
 
+        double stringAutoStart = 1.915;
 
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
 
         double startAngle = imu.getAngularOrientation().firstAngle;
         imuAngle();
+
+        grabbaClose();
 
         waitForStart();
 
@@ -73,7 +80,7 @@ public class MainAutoLeft extends StarterAuto {
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
-        double timeout = 25;
+        double timeout = 24;
         if (tag == 2) {
             timeout = 28;
         }
@@ -105,6 +112,8 @@ public class MainAutoLeft extends StarterAuto {
         grabbaOpen();
         sleep(100);
 
+        sleep(5000);  //timer to grab vals
+
         // Cycles with cones
         for (int cone = 0; cone < 5; cone++) {
             if ((getRuntime() - timeStart) >= timeout) {
@@ -121,24 +130,25 @@ public class MainAutoLeft extends StarterAuto {
             //Grab Align & Grab
             wristPick();
             grabbaOpen();
-            while (opModeIsActive() && (!armDone || !stringDone)) {
-                armDone = armAsync(armPicks[cone], true, 1);
-                stringDone = stringAsync(stringPicks[cone]);
+
+            while(opModeIsActive() && (!armDone2 || !stringDone)){
+                armDone2 = armAsync(armPicks[cone] -0.05, true, 1);
+                if (armpot.getVoltage()>stringAutoStart){
+                    stringDone = stringAsync(stringPicks[cone]);
+                }
                 if ((getRuntime() - timeStart) >= timeout) {
                     returnHome();
                     break;
                 }
             }
 
-            //Grab
-//            grabbaOpen();
-//            while (opModeIsActive() && !armDone2) {
-//                armDone2 = armAsync(armPicks[cone], true, 0.7);
-//                if ((getRuntime() - timeStart) >= timeout) {
-//                    returnHome();
-//                    break;
-//                }
-//            }
+            while (opModeIsActive() && !armDone) {
+                armDone = armAsync(armPicks[cone], true, 1);
+                if ((getRuntime() - timeStart) >= timeout) {
+                    returnHome();
+                    break;
+                }
+            }
 
             sleep(100);
             grabbaClose();
@@ -161,8 +171,8 @@ public class MainAutoLeft extends StarterAuto {
                 }
             }
             grabbaOpen();
-//            armMotor.setPower(0);
-//            stringMotor.setPower(0);
+            armMotor.setPower(0);
+            stringMotor.setPower(0);
             sleep(200);
         }
 

@@ -17,6 +17,7 @@ import org.openftc.easyopencv.OpenCvInternalCamera2;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+@Disabled
 @TeleOp
 
 public class AprilTagInit extends LinearOpMode
