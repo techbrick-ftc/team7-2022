@@ -65,7 +65,7 @@ public class StarterAuto extends LinearOpMode {
     final double VOLTSSTRINGDOWN = 1.588;
     final double TICKSPERBLOCK = 805;   // ~400 per foot
     final double ARMROTATEMAXVOLT = 2.3;
-    final double ARMVOLTSMID = 1.05;
+    final double ARMVOLTSMID = 1.06;
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
     public DcMotor frontLeft;
     public DcMotor backLeft;
@@ -355,6 +355,19 @@ public class StarterAuto extends LinearOpMode {
         }
         stringMotor.setPower(0);
     }
+
+    protected void returnMiddle() {
+        boolean stringDone = false;
+        boolean armDone = false;
+        while(opModeIsActive() && (!stringDone || !armDone)){
+            armDone = armAsync(ARMVOLTSMID, true, 1);
+            stringDone = stringAsync(VOLTSSTRINGDOWN);
+        }
+    }
+
+
+
+
 
     void scoreMiddlePole() {
         double time = getRuntime();

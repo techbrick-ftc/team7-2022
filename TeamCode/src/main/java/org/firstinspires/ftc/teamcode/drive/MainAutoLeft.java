@@ -80,7 +80,7 @@ public class MainAutoLeft extends StarterAuto {
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
-        double timeout = 24;
+        double timeout = 25;
         if (tag == 2) {
             timeout = 28;
         }
@@ -112,9 +112,9 @@ public class MainAutoLeft extends StarterAuto {
         grabbaOpen();
         sleep(100);
 
-        sleep(5000);  //timer to grab vals
 
         // Cycles with cones
+        cycleloop:
         for (int cone = 0; cone < 5; cone++) {
             if ((getRuntime() - timeStart) >= timeout) {
                 break;
@@ -137,16 +137,14 @@ public class MainAutoLeft extends StarterAuto {
                     stringDone = stringAsync(stringPicks[cone]);
                 }
                 if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    break;
+                    break cycleloop;
                 }
             }
 
             while (opModeIsActive() && !armDone) {
                 armDone = armAsync(armPicks[cone], true, 1);
                 if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    break;
+                    break cycleloop;
                 }
             }
 
@@ -156,18 +154,17 @@ public class MainAutoLeft extends StarterAuto {
 
             // Move to midpoint and flip wrist
             while (opModeIsActive() && !armDone3) {
-                armDone3 = armAsync(armDrop + 0.8, false, 0.8);
+                armDone3 = armAsync(armDrop + 0.8, false, 1);
                 if ((getRuntime() - timeStart) >= timeout) {
-                    returnHome();
-                    break;
+                    break cycleloop;
                 }
             }
             wristDrop();
             while (opModeIsActive() && (!armDone4 || !stringDone4)) {
-                armDone4 = armAsync(armDrop, true, 0.8);
+                armDone4 = armAsync(armDrop, true, 1);
                 stringDone4 = stringAsync(stringDrop);
                 if ((getRuntime() - timeStart) >= timeout) {
-                    break;
+                    break cycleloop;
                 }
             }
             grabbaOpen();
@@ -175,6 +172,7 @@ public class MainAutoLeft extends StarterAuto {
             stringMotor.setPower(0);
             sleep(200);
         }
+        returnMiddle();
 
         if (tag == 1) {
             drive.followTrajectorySequence(endingStraight);
