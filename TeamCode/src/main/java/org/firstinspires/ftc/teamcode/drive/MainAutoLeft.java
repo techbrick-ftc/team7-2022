@@ -66,10 +66,10 @@ public class MainAutoLeft extends StarterAuto {
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .strafeTo(new Vector2d(-36, -18.75), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .turn(Math.toRadians(73.75))
+                .turn(Math.toRadians(74))
                 .build();
         TrajectorySequence endingStraight = drive.trajectorySequenceBuilder(traj1.end())
-                .turn(Math.toRadians(-73.75))
+                .turn(Math.toRadians(-75)) //TODO: change angle so parking is good for spot 2
                 .strafeTo(new Vector2d(-36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
