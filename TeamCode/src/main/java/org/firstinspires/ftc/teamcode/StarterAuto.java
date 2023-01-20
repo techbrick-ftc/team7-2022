@@ -65,7 +65,7 @@ public class StarterAuto extends LinearOpMode {
     final double VOLTSSTRINGDOWN = 1.588;
     final double TICKSPERBLOCK = 805;   // ~400 per foot
     final double ARMROTATEMAXVOLT = 2.3;
-    final double ARMVOLTSMID = 1.06;
+    final double ARMVOLTSMID = 0.95;
     private final FtcDashboard dashboard = FtcDashboard.getInstance();
     public DcMotor frontLeft;
     public DcMotor backLeft;

@@ -209,15 +209,15 @@ public class MainTeleOp extends StarterAuto {
                 }
 
                 if (cur2.right_stick_y < -0.9) {
-                    wristPosition = 0.92;
+                    wristPosition = 0.91;
                 }
 
                 if (cur2.right_stick_y > 0.9) {
                     wristPosition = 0;
                 }
 
-                if (wristPosition > 1) {
-                    wristPosition = 0.92;
+                if (wristPosition >= 1) {
+                    wristPosition = 0.91;
                 } else if (wristPosition < 0) {
                     wristPosition = 0;
                 }

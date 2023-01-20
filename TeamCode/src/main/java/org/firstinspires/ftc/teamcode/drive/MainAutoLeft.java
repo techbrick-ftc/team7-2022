@@ -23,14 +23,11 @@ public class MainAutoLeft extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.735;
-        double stringDrop = 0.97;
+        double armDrop = 0.774;
+        double stringDrop = 0.96;
 
-
-        // add .05 to go down
-        double armPicks[] = {1.97, 2.035, 2.115, 2.1, 2.15};
-        double stringPicks[] = {0.794, 0.781, 0.764, 0.753, 0.749};
-
+        double armPicks[] = {2.01, 2.03, 2.1, 2.118, 2.178};
+        double stringPicks[] = {0.787, 0.8, 0.791, 0.791, 0.793};
 
 
         boolean armDone0 = false;
@@ -38,7 +35,6 @@ public class MainAutoLeft extends StarterAuto {
 
         boolean armDoneFirst = false;
 
-        double stringAutoStart = 1.915;
 
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
@@ -47,10 +43,11 @@ public class MainAutoLeft extends StarterAuto {
         imuAngle();
 
         grabbaClose();
-
         waitForStart();
 
         double timeStart = getRuntime();
+        packet.addLine("id after");
+        dashboard.sendTelemetryPacket(packet);
         int tag = getAprilTag(5);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -60,14 +57,19 @@ public class MainAutoLeft extends StarterAuto {
         drive.setPoseEstimate(startPose);
 
         double slowerVelocity = 68;
+        // 80
+
+
+        //imu: -148.84170654373366
+
 
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
-                .strafeTo(new Vector2d(-36, -19), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                .strafeTo(new Vector2d(-36, -18.75), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .turn(Math.toRadians(74))
+                .turn(Math.toRadians(73.75))
                 .build();
         TrajectorySequence endingStraight = drive.trajectorySequenceBuilder(traj1.end())
-                .turn(Math.toRadians(-74))
+                .turn(Math.toRadians(-73.75))
                 .strafeTo(new Vector2d(-36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
@@ -82,7 +84,7 @@ public class MainAutoLeft extends StarterAuto {
 
         double timeout = 25;
         if (tag == 2) {
-            timeout = 28;
+            timeout = 27.5;
         }
 
         waitForStart();
@@ -92,57 +94,42 @@ public class MainAutoLeft extends StarterAuto {
 
         drive.followTrajectorySequenceAsync(traj1);
         double timeElap = getRuntime();
-        while (opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)) {
+        while(opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)){
             if (getRuntime() - timeElap > 0.15) {
-                armDoneFirst = armAsync(armDrop + 0.15, true, 1);
+                armDoneFirst = armAsync(armDrop + 0.15, true,1);
                 stringDone0 = stringAsync(stringDrop);
             }
             drive.update();
         }
-//        drive.turn(Math.toRadians(74));
+//        drive.turn(Math.toRadians(73));
         stringMotor.setPower(0.1);
 
         wristDrop();
 
+
         boolean stringDoneFirst = false;
         while (opModeIsActive() && (!armDone0 || !stringDoneFirst)) {
-            armDone0 = armAsync(armDrop, true, .5);
+            armDone0 = armAsync(armDrop, true, 1);
             stringDoneFirst = stringAsync(stringDrop);
         }
         grabbaOpen();
         sleep(100);
 
-
         // Cycles with cones
         cycleloop:
         for (int cone = 0; cone < 5; cone++) {
             if ((getRuntime() - timeStart) >= timeout) {
-                break;
+                break cycleloop;
             }
-
+            //Grab Align
             boolean armDone = false;
             boolean stringDone = false;
-            boolean armDone2 = false;
-            boolean armDone3 = false;
-            boolean armDone4 = false;
-            boolean stringDone4 = false;
-
-            //Grab Align & Grab
             wristPick();
             grabbaOpen();
 
-            while(opModeIsActive() && (!armDone2 || !stringDone)){
-                armDone2 = armAsync(armPicks[cone] -0.05, true, 1);
-                if (armpot.getVoltage()>stringAutoStart){
-                    stringDone = stringAsync(stringPicks[cone]);
-                }
-                if ((getRuntime() - timeStart) >= timeout) {
-                    break cycleloop;
-                }
-            }
-
-            while (opModeIsActive() && !armDone) {
+            while (opModeIsActive() && (!armDone || !stringDone)) {
                 armDone = armAsync(armPicks[cone], true, 1);
+                stringDone = stringAsync(stringPicks[cone]);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
                 }
@@ -152,14 +139,21 @@ public class MainAutoLeft extends StarterAuto {
             grabbaClose();
             sleep(300);
 
+            boolean armDone3 = false;
+
             // Move to midpoint and flip wrist
+
             while (opModeIsActive() && !armDone3) {
-                armDone3 = armAsync(armDrop + 0.8, false, 1);
+                armDone3 = armAsync(armDrop + 1, false, 1);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
                 }
             }
             wristDrop();
+
+            boolean armDone4 = false;
+            boolean stringDone4 = false;
+
             while (opModeIsActive() && (!armDone4 || !stringDone4)) {
                 armDone4 = armAsync(armDrop, true, 1);
                 stringDone4 = stringAsync(stringDrop);
@@ -167,12 +161,13 @@ public class MainAutoLeft extends StarterAuto {
                     break cycleloop;
                 }
             }
-            grabbaOpen();
             armMotor.setPower(0);
             stringMotor.setPower(0);
+            grabbaOpen();
             sleep(200);
         }
         returnMiddle();
+//        drive.turn(Math.toRadians(-74));
 
         if (tag == 1) {
             drive.followTrajectorySequence(endingStraight);
@@ -180,6 +175,7 @@ public class MainAutoLeft extends StarterAuto {
             motorsStop();
             sleep(1000);
         } else if (tag == 2) {
+            drive.turn(Math.toRadians(73));
             motorsStop();
             sleep(1000);
         } else if (tag == 3) {
