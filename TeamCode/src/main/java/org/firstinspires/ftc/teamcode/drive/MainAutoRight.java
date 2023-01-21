@@ -24,10 +24,10 @@ public class MainAutoRight extends StarterAuto {
         initAprilTags();
 
         double armDrop = 0.748;
-        double stringDrop = 0.981;
+        double stringDrop = 0.985;
 
         double armPicks[] = {2.019, 2.042, 2.062, 2.128, 2.151};
-        double stringPicks[] = {0.792, 0.791, 0.778, 0.788, 0.785};
+        double stringPicks[] = {0.792, 0.791, 0.788, 0.788, 0.785};
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
@@ -42,23 +42,12 @@ public class MainAutoRight extends StarterAuto {
         imuAngle();
 
         grabbaClose();
-        waitForStart();
 
-        double timeStart = getRuntime();
-        packet.addLine("id after");
-        dashboard.sendTelemetryPacket(packet);
-        int tag = getAprilTag(5);
+        double slowerVelocity = 68;
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 180 degrees
         Pose2d startPose = new Pose2d(36, -61.5, Math.toRadians(90));
-
-        drive.setPoseEstimate(startPose);
-
-        double slowerVelocity = 68;
-        // 80
-
-        //imu: -136.10930502510277
 
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .strafeTo(new Vector2d(36, -25.25), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
@@ -80,12 +69,21 @@ public class MainAutoRight extends StarterAuto {
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
+        waitForStart();
+
+        double timeStart = getRuntime();
+        packet.addLine("id after");
+        dashboard.sendTelemetryPacket(packet);
+        int tag = getAprilTag(5);
+
+
+        drive.setPoseEstimate(startPose);
+
         double timeout = 25;
         if (tag == 2) {
             timeout = 27.5;
         }
 
-        waitForStart();
 
         grabbaClose();
         if (isStopRequested()) return;
@@ -164,8 +162,13 @@ public class MainAutoRight extends StarterAuto {
             grabbaOpen();
             sleep(200);
         }
+
+        // If arm is near drop point, drop cone
+        if (armpot.getVoltage() < 0.766) {
+            grabbaOpen();
+        }
+
         returnMiddle();
-//        drive.turn(Math.toRadians(-74));
 
         if (tag == 3) {
             drive.followTrajectorySequence(endingStraight);

@@ -67,7 +67,7 @@ public class AutoParkingRight extends StarterAuto {
 
         drive.followTrajectory(endingStraight);
 
-        if (tag == 1) {
+        if (tag == 3) {
             drive.followTrajectory(endingLeft);
             packet.put("tag", tag);
             dashboard.sendTelemetryPacket(packet);
@@ -79,7 +79,7 @@ public class AutoParkingRight extends StarterAuto {
 
             motorsStop();
             sleep(1000);
-        } else if (tag == 3) {
+        } else if (tag == 1) {
             drive.followTrajectory(endingRight);
             packet.put("tag", tag);
             dashboard.sendTelemetryPacket(packet);

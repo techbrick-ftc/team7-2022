@@ -43,9 +43,9 @@ public class MainAutoLeft extends StarterAuto {
         imuAngle();
 
         grabbaClose();
-        waitForStart();
 
-        double timeStart = getRuntime();
+
+
         packet.addLine("id after");
         dashboard.sendTelemetryPacket(packet);
         int tag = getAprilTag(5);
@@ -60,16 +60,13 @@ public class MainAutoLeft extends StarterAuto {
         // 80
 
 
-        //imu: -148.84170654373366
-
-
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .strafeTo(new Vector2d(-36, -18.75), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .turn(Math.toRadians(74))
+                .turn(Math.toRadians(73))
                 .build();
         TrajectorySequence endingStraight = drive.trajectorySequenceBuilder(traj1.end())
-                .turn(Math.toRadians(-75)) //TODO: change angle so parking is good for spot 2
+                .turn(Math.toRadians(-73)) //TODO: change angle so parking is good for spot 2
                 .strafeTo(new Vector2d(-36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
@@ -87,10 +84,10 @@ public class MainAutoLeft extends StarterAuto {
             timeout = 27.5;
         }
 
-        waitForStart();
-
         grabbaClose();
-        if (isStopRequested()) return;
+
+        waitForStart();
+        double timeStart = getRuntime();
 
         drive.followTrajectorySequenceAsync(traj1);
         double timeElap = getRuntime();
@@ -106,7 +103,6 @@ public class MainAutoLeft extends StarterAuto {
 
         wristDrop();
 
-
         boolean stringDoneFirst = false;
         while (opModeIsActive() && (!armDone0 || !stringDoneFirst)) {
             armDone0 = armAsync(armDrop, true, 1);
@@ -118,7 +114,8 @@ public class MainAutoLeft extends StarterAuto {
         // Cycles with cones
         cycleloop:
         for (int cone = 0; cone < 5; cone++) {
-            if ((getRuntime() - timeStart) >= timeout) {
+
+            if (isStopRequested() || (getRuntime() - timeStart) >= timeout) {
                 break cycleloop;
             }
             //Grab Align
@@ -175,7 +172,7 @@ public class MainAutoLeft extends StarterAuto {
             motorsStop();
             sleep(1000);
         } else if (tag == 2) {
-            drive.turn(Math.toRadians(73));
+            drive.turn(Math.toRadians(-74));
             motorsStop();
             sleep(1000);
         } else if (tag == 3) {

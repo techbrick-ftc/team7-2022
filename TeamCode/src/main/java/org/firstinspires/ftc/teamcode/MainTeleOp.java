@@ -110,7 +110,7 @@ public class MainTeleOp extends StarterAuto {
                         || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())) {
                     armMotor.setPower(0);
                 } else {
-                    armMotor.setPower(gamepad2.left_stick_y * 0.7);
+                    armMotor.setPower(gamepad2.left_stick_y);
                 }
                 packet.put("arm max", armMotor.getCurrentPosition());
                 packet.put("arm up touch", armuptouch.isPressed());
@@ -160,7 +160,7 @@ public class MainTeleOp extends StarterAuto {
 
             }
             if (currentState == states.GrabAlign) {
-                boolean armDone = armAsync(armGrabPos - 0.5,true, 1);
+                boolean armDone = armAsync(armGrabPos - 0.5,false, 0.9);
                 boolean stringDone = stringAsync(stringGrabPos);
                 if (armDone && stringDone) {
                     currentState = states.Grab;
@@ -176,7 +176,7 @@ public class MainTeleOp extends StarterAuto {
                 currentState = states.Align;
             }
             if (currentState == states.Align) {
-                boolean armDone = armAsync(armDropPos + 0.3, true, 1);
+                boolean armDone = armAsync(armDropPos + 0.3, false, 0.9);
 
                 if (armDone) {
                     currentState = states.Release;
