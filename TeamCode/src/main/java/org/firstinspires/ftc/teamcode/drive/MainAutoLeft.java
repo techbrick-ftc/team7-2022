@@ -110,7 +110,7 @@ public class MainAutoLeft extends StarterAuto {
             stringDoneFirst = stringAsync(stringDrop);
         }
         grabbaOpen();
-        sleep(100);
+        sleep(200);
 
         // Cycles with cones
         cycleloop:
