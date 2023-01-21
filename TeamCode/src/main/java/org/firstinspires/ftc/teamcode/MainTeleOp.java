@@ -52,8 +52,9 @@ public class MainTeleOp extends StarterAuto {
         Gamepad cur2 = new Gamepad();
         Gamepad cur1 = new Gamepad();
 
-        boolean grabberOpen = true;
+        boolean grabberOpen = false;
 
+        grabbaClose();
         waitForStart();
 
         zeroAngle = imu.getAngularOrientation().firstAngle;
@@ -291,7 +292,9 @@ public class MainTeleOp extends StarterAuto {
             backLeft.setPower(backLeftPower);      // back
 
             packet.put("zer", Math.toDegrees(zeroAngle));
-            packet.put("imu", Math.toDegrees(imu.getAngularOrientation().firstAngle));
+            packet.put("imu x ", Math.toDegrees(imu.getAngularOrientation().firstAngle));
+            packet.put("imu y ", Math.toDegrees(imu.getAngularOrientation().secondAngle));
+            packet.put("imu z ", Math.toDegrees(imu.getAngularOrientation().thirdAngle));
 
             dashboard.sendTelemetryPacket(packet);
 

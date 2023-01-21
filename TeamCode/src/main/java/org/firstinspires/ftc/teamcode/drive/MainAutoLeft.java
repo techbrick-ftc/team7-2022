@@ -89,6 +89,7 @@ public class MainAutoLeft extends StarterAuto {
         waitForStart();
         double timeStart = getRuntime();
 
+
         drive.followTrajectorySequenceAsync(traj1);
         double timeElap = getRuntime();
         while(opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)){
@@ -114,7 +115,6 @@ public class MainAutoLeft extends StarterAuto {
         // Cycles with cones
         cycleloop:
         for (int cone = 0; cone < 5; cone++) {
-
             if (isStopRequested() || (getRuntime() - timeStart) >= timeout) {
                 break cycleloop;
             }
@@ -129,6 +129,9 @@ public class MainAutoLeft extends StarterAuto {
                 stringDone = stringAsync(stringPicks[cone]);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
+                }
+                if (Math.abs(Math.toDegrees(imu.getAngularOrientation().secondAngle)) > 10){
+                    requestOpModeStop();
                 }
             }
 
@@ -145,6 +148,9 @@ public class MainAutoLeft extends StarterAuto {
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
                 }
+                if (Math.abs(Math.toDegrees(imu.getAngularOrientation().secondAngle)) > 10){
+                    requestOpModeStop();
+                }
             }
             wristDrop();
 
@@ -156,6 +162,9 @@ public class MainAutoLeft extends StarterAuto {
                 stringDone4 = stringAsync(stringDrop);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
+                }
+                if (Math.abs(Math.toDegrees(imu.getAngularOrientation().secondAngle)) > 10){
+                    requestOpModeStop();
                 }
             }
             armMotor.setPower(0);

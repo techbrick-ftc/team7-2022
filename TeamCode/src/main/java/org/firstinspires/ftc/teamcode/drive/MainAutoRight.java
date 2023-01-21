@@ -129,6 +129,9 @@ public class MainAutoRight extends StarterAuto {
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
                 }
+                if (Math.abs(Math.toDegrees(imu.getAngularOrientation().secondAngle)) > 10){
+                    requestOpModeStop();
+                }
             }
 
             sleep(100);
@@ -144,6 +147,9 @@ public class MainAutoRight extends StarterAuto {
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
                 }
+                if (Math.abs(Math.toDegrees(imu.getAngularOrientation().secondAngle)) > 10){
+                    requestOpModeStop();
+                }
             }
             wristDrop();
 
@@ -155,6 +161,9 @@ public class MainAutoRight extends StarterAuto {
                 stringDone4 = stringAsync(stringDrop);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
+                }
+                if (Math.abs(Math.toDegrees(imu.getAngularOrientation().secondAngle)) > 10){
+                    requestOpModeStop();
                 }
             }
             armMotor.setPower(0);
