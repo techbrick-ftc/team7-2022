@@ -359,14 +359,11 @@ public class StarterAuto extends LinearOpMode {
     protected void returnMiddle() {
         boolean stringDone = false;
         boolean armDone = false;
-        while(opModeIsActive() && (!stringDone || !armDone)){
+        while (opModeIsActive() && (!stringDone || !armDone)) {
             armDone = armAsync(ARMVOLTSMID, true, 1);
             stringDone = stringAsync(VOLTSSTRINGDOWN);
         }
     }
-
-
-
 
 
     void scoreMiddlePole() {
@@ -522,6 +519,14 @@ public class StarterAuto extends LinearOpMode {
     protected void wristPick() {
         wristServo.setPosition(0);
     }
+
+//    protected void recoveryMode() {
+//
+//
+//    }
+
+
+
 
 
     @Override

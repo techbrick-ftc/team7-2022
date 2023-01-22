@@ -23,11 +23,11 @@ public class MainAutoLeft extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.774;
-        double stringDrop = 0.96;
+        double armDrop = 0.766;
+        double stringDrop = 0.918;
 
-        double armPicks[] = {2.01, 2.03, 2.1, 2.118, 2.178};
-        double stringPicks[] = {0.787, 0.8, 0.791, 0.791, 0.793};
+        double armPicks[] = {2.019, 2.057, 2.094, 2.128, 2.161};
+        double stringPicks[] = {0.82, 0.83, 0.839, 0.845, 0.844};
 
 
         boolean armDone0 = false;
@@ -46,9 +46,6 @@ public class MainAutoLeft extends StarterAuto {
 
 
 
-        packet.addLine("id after");
-        dashboard.sendTelemetryPacket(packet);
-        int tag = getAprilTag(5);
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 180 degrees
@@ -79,14 +76,20 @@ public class MainAutoLeft extends StarterAuto {
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
-        double timeout = 25;
+        grabbaClose();
+
+        waitForStart();
+
+        int tag = getAprilTag(5);
+        packet.put("APRIL CONE", tag);
+        dashboard.sendTelemetryPacket(packet);
+
+
+        double timeout = 24.5;
         if (tag == 2) {
             timeout = 27.5;
         }
 
-        grabbaClose();
-
-        waitForStart();
         double timeStart = getRuntime();
 
 
@@ -102,6 +105,7 @@ public class MainAutoLeft extends StarterAuto {
 //        drive.turn(Math.toRadians(73));
         stringMotor.setPower(0.1);
 
+
         wristDrop();
 
         boolean stringDoneFirst = false;
@@ -115,7 +119,7 @@ public class MainAutoLeft extends StarterAuto {
         // Cycles with cones
         cycleloop:
         for (int cone = 0; cone < 5; cone++) {
-            if (isStopRequested() || (getRuntime() - timeStart) >= timeout) {
+            if ((getRuntime() - timeStart) >= timeout) {
                 break cycleloop;
             }
             //Grab Align
@@ -172,6 +176,11 @@ public class MainAutoLeft extends StarterAuto {
             grabbaOpen();
             sleep(200);
         }
+
+        if (armpot.getVoltage() < 0.766) {
+            grabbaOpen();
+        }
+
         returnMiddle();
 //        drive.turn(Math.toRadians(-74));
 
