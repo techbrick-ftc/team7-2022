@@ -35,7 +35,6 @@ public class MainAutoLeft extends StarterAuto {
 
         boolean armDoneFirst = false;
 
-
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
 
@@ -43,9 +42,6 @@ public class MainAutoLeft extends StarterAuto {
         imuAngle();
 
         grabbaClose();
-
-
-
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         // We want to start the bot at x: -36, y: -60, heading: 180 degrees
@@ -56,14 +52,13 @@ public class MainAutoLeft extends StarterAuto {
         double slowerVelocity = 68;
         // 80
 
-
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .strafeTo(new Vector2d(-36, -18.75), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .turn(Math.toRadians(73))
                 .build();
         TrajectorySequence endingStraight = drive.trajectorySequenceBuilder(traj1.end())
-                .turn(Math.toRadians(-73)) //TODO: change angle so parking is good for spot 2
+                .turn(Math.toRadians(-73))
                 .strafeTo(new Vector2d(-36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
@@ -76,14 +71,11 @@ public class MainAutoLeft extends StarterAuto {
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
 
-        grabbaClose();
-
         waitForStart();
 
         int tag = getAprilTag(5);
         packet.put("APRIL CONE", tag);
         dashboard.sendTelemetryPacket(packet);
-
 
         double timeout = 24.5;
         if (tag == 2) {
@@ -102,9 +94,7 @@ public class MainAutoLeft extends StarterAuto {
             }
             drive.update();
         }
-//        drive.turn(Math.toRadians(73));
         stringMotor.setPower(0.1);
-
 
         wristDrop();
 
@@ -181,6 +171,7 @@ public class MainAutoLeft extends StarterAuto {
             grabbaOpen();
         }
 
+        wristDrop();
         returnMiddle();
 //        drive.turn(Math.toRadians(-74));
 

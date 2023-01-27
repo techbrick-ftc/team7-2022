@@ -45,7 +45,7 @@ public class MainTeleOp extends StarterAuto {
         double armDropPos = ARMVOLTSMID;
         double stringDropPos = VOLTSSTRINGDOWN;
 
-        double wristPosition = 0;
+        double wristPosition = 0.92;
         Gamepad previousGamepad2 = new Gamepad();
         Gamepad previousGamepad1 = new Gamepad();
 
@@ -143,6 +143,7 @@ public class MainTeleOp extends StarterAuto {
                 if (currentState == states.Manual) {
                     currentState = states.GrabAlign;
                     wristPick();
+                    grabbaOpen();
                 } else if (currentState == states.Pause) {
                     currentState = pausedState;
                 }
@@ -158,40 +159,30 @@ public class MainTeleOp extends StarterAuto {
                 armMotor.setPower(0);
                 currentState = states.Manual;
                 pausedState = states.Manual;
-
             }
             if (currentState == states.GrabAlign) {
-                boolean armDone = armAsync(armGrabPos - 0.5,false, 0.9);
+                boolean armDone = armAsync(armGrabPos, true, 1);
                 boolean stringDone = stringAsync(stringGrabPos);
                 if (armDone && stringDone) {
                     currentState = states.Grab;
                 }
             }
             if (currentState == states.Grab) {
-                grabbaOpen();
-                armSync(armGrabPos);
-                sleep(100);
                 grabbaClose();
                 sleep(300);
                 wristDrop();
                 currentState = states.Align;
             }
             if (currentState == states.Align) {
-                boolean armDone = armAsync(armDropPos + 0.3, false, 0.9);
-
-                if (armDone) {
+                boolean armDone = armAsync(armDropPos, true, 1);
+                boolean stringDone = stringAsync(stringDropPos);
+                if (armDone && stringDone) {
                     currentState = states.Release;
                 }
             }
             if (currentState == states.Release) {
-                stringSync(stringDropPos);
-                armSync(armDropPos);
-                sleep(200);
                 grabbaOpen();
-                sleep(200);
-                armSync(1);
-                wristPick();
-                currentState = states.Manual;
+                currentState = states.GrabAlign;
             }
             if (currentState == states.Pause) {
                 stringMotor.setPower(0);
@@ -202,20 +193,18 @@ public class MainTeleOp extends StarterAuto {
             if (currentState == states.Manual) {
                 if (cur2.dpad_right && !previousGamepad2.dpad_right) {
                     wristPosition += 0.1;
-
                 }
                 if (cur2.dpad_left && !previousGamepad2.dpad_left) {
                     wristPosition -= 0.1;
-
                 }
-
                 if (cur2.right_stick_y < -0.9) {
                     wristPosition = 0.91;
                 }
-
                 if (cur2.right_stick_y > 0.9) {
                     wristPosition = 0;
                 }
+
+                // Picking is position 0
 
                 if (wristPosition >= 1) {
                     wristPosition = 0.91;

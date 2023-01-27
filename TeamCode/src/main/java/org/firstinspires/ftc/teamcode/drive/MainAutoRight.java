@@ -177,6 +177,7 @@ public class MainAutoRight extends StarterAuto {
             grabbaOpen();
         }
 
+        wristDrop();
         returnMiddle();
 
         if (tag == 3) {
