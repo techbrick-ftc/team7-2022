@@ -460,6 +460,46 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
+
+    protected boolean armNewAsync(double targVolt, boolean slowDown, double speed) {
+        double STARTDECELERATE = 0.01;
+        double ACCELERATECONSTANT = 0.1;
+        double direction = 0;
+        if (armpot.getVoltage() < targVolt) {
+            direction = 1;
+        } else {
+            direction = -1;
+        }
+        double power = Math.signum(armpot.getVoltage() - targVolt);
+        if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
+            armMotor.setPower(0);
+            return true;
+        }
+        if (power == 1 && (armuptouch.isPressed())) {
+            armMotor.setPower(0);
+        } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
+            armMotor.setPower(0);
+        } else {
+            if (slowDown) {
+                if (Math.abs(targVolt - armpot.getVoltage()) > STARTDECELERATE) {
+                    // accelerate
+                    if (power == 1) {
+                    } else {
+                        power += ACCELERATECONSTANT;
+                    }
+                } else {
+                    // decelerate
+                    power -= ACCELERATECONSTANT;
+                }
+
+            }
+            power = Range.clip(power, -speed, speed);
+            power *= direction;
+            armMotor.setPower(power);
+        }
+        return false;
+    }
+
     void stringNoBackDrive() {
         if (armpot.getVoltage() > 2) {
             stringMotor.setPower(0);
@@ -524,9 +564,6 @@ public class StarterAuto extends LinearOpMode {
 //
 //
 //    }
-
-
-
 
 
     @Override
