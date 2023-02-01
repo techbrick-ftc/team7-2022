@@ -460,6 +460,44 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
+    protected boolean armNewAsync(double targVolt, boolean slowDown, double speed) {
+        double STARTDECELERATE = 0.1;
+        double ACCELERATECONSTANT = 0.03;
+        double power = Math.signum(armpot.getVoltage() - targVolt);
+        double curPower = Math.abs(armMotor.getPower());
+        if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
+            armMotor.setPower(0);
+            return true;
+        }
+        if (power == 1 && (armuptouch.isPressed())) {
+            armMotor.setPower(0);
+        } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
+            armMotor.setPower(0);
+        } else {
+            if (slowDown) {
+                if (Math.abs(targVolt - armpot.getVoltage()) > STARTDECELERATE) {
+                    // accelerate
+                    if (curPower < speed) {
+                        curPower += ACCELERATECONSTANT;
+                    }
+                } else {
+                    // decelerate
+                    if (curPower>0) {
+                        curPower -= ACCELERATECONSTANT;
+                    }
+                }
+
+            }
+            curPower = Range.clip(curPower, 0, speed);
+            curPower *= power;
+            armMotor.setPower(curPower);
+        }
+        return false;
+    }
+
+
+
+
     void stringNoBackDrive() {
         if (armpot.getVoltage() > 2) {
             stringMotor.setPower(0);
