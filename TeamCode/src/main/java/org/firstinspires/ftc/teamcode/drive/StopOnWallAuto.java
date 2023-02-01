@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
 @Autonomous
-public class MainAutoLeft extends StarterAuto {
+public class StopOnWallAuto extends StarterAuto {
     @Override
     public void runOpMode() {
         TelemetryPacket packet = new TelemetryPacket();
@@ -28,6 +28,11 @@ public class MainAutoLeft extends StarterAuto {
 
         double armPicks[] = {2.019, 2.057, 2.094, 2.128, 2.161};
         double stringPicks[] = {0.82, 0.83, 0.839, 0.845, 0.844};
+
+        //TODO: grab these values
+        double stringWallLength = 0;
+        double armHeightWall = 0;
+
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
@@ -118,8 +123,9 @@ public class MainAutoLeft extends StarterAuto {
             grabbaOpen();
 
             while (opModeIsActive() && (!armDone || !stringDone)) {
-                armDone = armAsync(armPicks[cone], true, 1);
-                stringDone = stringAsync(stringPicks[cone]);
+                //Go down and move until arm hits wall
+                armDone = armAsync(armHeightWall, true, 1);
+                stringDone = stringAsync(stringWallLength*0.75);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
                 }
@@ -127,7 +133,22 @@ public class MainAutoLeft extends StarterAuto {
                     requestOpModeStop();
                 }
             }
+            double stringPotLastVal = stringpot.getVoltage();
 
+            while(opModeIsActive() && stringpot.getVoltage() > stringWallLength) {
+                sleep(50);
+                stringMotor.setPower(0.5);
+                if (Math.abs(stringPotLastVal - stringpot.getVoltage()) < 0.01) {
+                    break;
+                }
+            }
+            stringMotor.setPower(0);
+
+            while(opModeIsActive() && !armDone){
+                armDone = armAsync(armPicks[cone], true, 1);
+            }
+
+            // grab cone
             sleep(100);
             grabbaClose();
             sleep(300);
@@ -191,3 +212,4 @@ public class MainAutoLeft extends StarterAuto {
         }
     }
 }
+

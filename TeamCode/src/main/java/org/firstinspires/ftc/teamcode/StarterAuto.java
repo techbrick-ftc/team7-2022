@@ -61,8 +61,8 @@ public class StarterAuto extends LinearOpMode {
     final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
     final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
     final double VOLTSPERTRIP = 1.438; // may need to change
-    final double VOLTSSTRINGUP = 0.192;
-    final double VOLTSSTRINGDOWN = 1.588;
+    final double VOLTSSTRINGUP = 0.7;
+    final double VOLTSSTRINGDOWN = 2.5;
     final double TICKSPERBLOCK = 805;   // ~400 per foot
     final double ARMROTATEMAXVOLT = 2.3;
     final double ARMVOLTSMID = 0.95;
@@ -286,7 +286,7 @@ public class StarterAuto extends LinearOpMode {
 
     // picking up = arm pot bigger
     // negative power to pick up - ARM
-    void armSync(double targVolt) {
+    protected void armSync(double targVolt) {
         telemetry.addData("armturn", armpot.getVoltage());
         telemetry.update();
         while (opModeIsActive() && Math.abs(armpot.getVoltage() - targVolt) >= 0.01) {
@@ -437,30 +437,6 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected boolean armAsync(double targVolt, boolean slowDown, double speed) {
-        double power = Math.signum(armpot.getVoltage() - targVolt);
-        if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
-            armMotor.setPower(0);
-            return true;
-        }
-        if (power == 1 && (armuptouch.isPressed())) {
-            armMotor.setPower(0);
-        } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
-            armMotor.setPower(0);
-        } else {
-            if (slowDown) {
-                if (Math.abs(armpot.getVoltage() - targVolt) < .15) {
-                    power *= 0.4;
-                } else if (Math.abs(armpot.getVoltage() - targVolt) < .3) {
-                    power *= 0.6;
-                }
-            }
-            power = Range.clip(power, -speed, speed);
-            armMotor.setPower(power);
-        }
-        return false;
-    }
-
-    protected boolean armNewAsync(double targVolt, boolean slowDown, double speed) {
         double STARTDECELERATE = 0.1;
         double ACCELERATECONSTANT = 0.03;
         double power = Math.signum(armpot.getVoltage() - targVolt);
