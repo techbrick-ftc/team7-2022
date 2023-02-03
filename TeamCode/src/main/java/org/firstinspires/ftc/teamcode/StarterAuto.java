@@ -437,8 +437,9 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected boolean armAsync(double targVolt, boolean slowDown, double speed) {
-        double STARTDECELERATE = 0.1;
+        double STARTDECELERATE = 0.2;
         double ACCELERATECONSTANT = 0.03;
+        double DECELERATECONSTANT = 0.02;
         double power = Math.signum(armpot.getVoltage() - targVolt);
         double curPower = Math.abs(armMotor.getPower());
         if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
@@ -447,8 +448,10 @@ public class StarterAuto extends LinearOpMode {
         }
         if (power == 1 && (armuptouch.isPressed())) {
             armMotor.setPower(0);
+            return true;
         } else if (power == -1 && (armpot.getVoltage() >= ARMROTATEMAXVOLT)) {
             armMotor.setPower(0);
+            return true;
         } else {
             if (slowDown) {
                 if (Math.abs(targVolt - armpot.getVoltage()) > STARTDECELERATE) {
@@ -459,12 +462,12 @@ public class StarterAuto extends LinearOpMode {
                 } else {
                     // decelerate
                     if (curPower>0) {
-                        curPower -= ACCELERATECONSTANT;
+                        curPower -= DECELERATECONSTANT;
                     }
                 }
 
             }
-            curPower = Range.clip(curPower, 0, speed);
+            curPower = Range.clip(curPower, 0.35, speed);
             curPower *= power;
             armMotor.setPower(curPower);
         }

@@ -106,6 +106,13 @@ public class MainTeleOp extends StarterAuto {
                 stringSync(0.368);
             }
 
+            if (cur2.x && !previousGamepad2.x){
+                boolean armDone = false;
+                while (opModeIsActive() && !armDone) {
+                    armDone = armAsync(1, true, 1);
+                }
+            }
+
             if (currentState == states.Manual) {
                 if ((gamepad2.left_stick_y < 0 && armpot.getVoltage() >= ARMROTATEMAXVOLT)
                         || (gamepad2.left_stick_y > 0 && armuptouch.isPressed())) {

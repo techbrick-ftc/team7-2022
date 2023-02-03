@@ -23,15 +23,16 @@ public class StopOnWallAuto extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.766;
-        double stringDrop = 0.918;
+        double armDrop = 0.748;
+        double stringDrop = 1.448;
 
-        double armPicks[] = {2.019, 2.057, 2.094, 2.128, 2.161};
-        double stringPicks[] = {0.82, 0.83, 0.839, 0.845, 0.844};
+        double stringPickUp = 1.339;
 
-        //TODO: grab these values
-        double stringWallLength = 0;
-        double armHeightWall = 0;
+        double armPicks[] = {2, 2.051, 2.111, 2.184, 2.202};
+
+
+        double stringWallLength = 1.158;
+        double armHeightWall = 1.925;
 
 
         boolean armDone0 = false;
@@ -88,8 +89,8 @@ public class StopOnWallAuto extends StarterAuto {
 
         double timeStart = getRuntime();
 
-
         drive.followTrajectorySequenceAsync(traj1);
+
         double timeElap = getRuntime();
         while (opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)) {
             if (getRuntime() - timeElap > 0.15) {
@@ -110,6 +111,8 @@ public class StopOnWallAuto extends StarterAuto {
         grabbaOpen();
         sleep(200);
 
+        sleep(10000); // GRAB VALUES
+
         // Cycles with cones
         cycleloop:
         for (int cone = 0; cone < 5; cone++) {
@@ -123,9 +126,9 @@ public class StopOnWallAuto extends StarterAuto {
             grabbaOpen();
 
             while (opModeIsActive() && (!armDone || !stringDone)) {
-                //Go down and move until arm hits wall
+                //Go down to above cones, string inside wall
                 armDone = armAsync(armHeightWall, true, 1);
-                stringDone = stringAsync(stringWallLength*0.75);
+                stringDone = stringAsync(stringWallLength+0.35);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
                 }
@@ -133,17 +136,20 @@ public class StopOnWallAuto extends StarterAuto {
                     requestOpModeStop();
                 }
             }
-            double stringPotLastVal = stringpot.getVoltage();
+            packet.addLine("im up here");
+            dashboard.sendTelemetryPacket(packet);
 
-            while(opModeIsActive() && stringpot.getVoltage() > stringWallLength) {
-                sleep(50);
-                stringMotor.setPower(0.5);
-                if (Math.abs(stringPotLastVal - stringpot.getVoltage()) < 0.01) {
-                    break;
-                }
+            // Move string motor until pot values haven't changed - hitting the wall -
+            double stringPotLastVal = stringpot.getVoltage();
+            stringDone = false;
+            while(opModeIsActive() && !stringDone ) {
+                stringDone = stringAsync(stringPickUp);
             }
+            packet.addLine("im down here");
+            dashboard.sendTelemetryPacket(packet);
             stringMotor.setPower(0);
 
+            armDone = false;
             while(opModeIsActive() && !armDone){
                 armDone = armAsync(armPicks[cone], true, 1);
             }

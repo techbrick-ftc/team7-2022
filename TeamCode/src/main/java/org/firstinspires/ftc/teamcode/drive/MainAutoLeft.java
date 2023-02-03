@@ -23,11 +23,11 @@ public class MainAutoLeft extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.766;
-        double stringDrop = 0.918;
+        double armDrop = 0.748;
+        double stringDrop = 1.448;
 
-        double armPicks[] = {2.019, 2.057, 2.094, 2.128, 2.161};
-        double stringPicks[] = {0.82, 0.83, 0.839, 0.845, 0.844};
+        double armPicks[] = {1.993, 2.062, 2.129, 2.145, 2.186};
+        double stringPicks[] = {1.278, 1.285, 1.305, 1.325, 1.315};
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
