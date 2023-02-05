@@ -70,6 +70,9 @@ public class MainAutoRight extends StarterAuto {
                 .build();
 
         waitForStart();
+        telemetry.addData("string pot", stringpot.getVoltage());
+        telemetry.addData("armpot", armpot.getVoltage());
+        telemetry.update();
 
         double timeStart = getRuntime();
         packet.addLine("id after");

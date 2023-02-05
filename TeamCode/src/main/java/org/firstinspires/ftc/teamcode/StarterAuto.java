@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.openftc.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -61,8 +62,8 @@ public class StarterAuto extends LinearOpMode {
     final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
     final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
     final double VOLTSPERTRIP = 1.438; // may need to change
-    final double VOLTSSTRINGUP = 0.7;
-    final double VOLTSSTRINGDOWN = 2.5;
+    final double VOLTSSTRINGUP = 0.92;
+    final double VOLTSSTRINGDOWN = 3.17;
     final double TICKSPERBLOCK = 805;   // ~400 per foot
     final double ARMROTATEMAXVOLT = 2.3;
     final double ARMVOLTSMID = 0.95;
@@ -250,6 +251,8 @@ public class StarterAuto extends LinearOpMode {
     }
 
     protected void initialize() {
+
+
         frontLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         backLeft = hardwareMap.get(DcMotor.class, "backLeft");
         frontRight = hardwareMap.get(DcMotor.class, "frontRight");
@@ -279,6 +282,10 @@ public class StarterAuto extends LinearOpMode {
         armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        telemetry.addData("string pot", stringpot.getVoltage());
+        telemetry.addData("armpot", armpot.getVoltage());
+        telemetry.update();
 
         BNO055IMU.Parameters params = new BNO055IMU.Parameters();
         imu.initialize(params);
@@ -436,10 +443,10 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
-    protected boolean armAsync(double targVolt, boolean slowDown, double speed) {
-        double STARTDECELERATE = 0.2;
-        double ACCELERATECONSTANT = 0.03;
-        double DECELERATECONSTANT = 0.02;
+    protected boolean armAsync(double targVolt, boolean slowDown, double speed, double startDeclerate, double accelerateConstant, double decelerateConstant) {
+        double STARTDECELERATE = startDeclerate;
+        double ACCELERATECONSTANT = accelerateConstant;
+        double DECELERATECONSTANT = decelerateConstant;
         double power = Math.signum(armpot.getVoltage() - targVolt);
         double curPower = Math.abs(armMotor.getPower());
         if (Math.abs(armpot.getVoltage() - targVolt) <= 0.01) {
@@ -465,7 +472,9 @@ public class StarterAuto extends LinearOpMode {
                         curPower -= DECELERATECONSTANT;
                     }
                 }
-
+            }
+            else{
+                curPower = speed;
             }
             curPower = Range.clip(curPower, 0.35, speed);
             curPower *= power;
@@ -474,7 +483,12 @@ public class StarterAuto extends LinearOpMode {
         return false;
     }
 
-
+    protected boolean armAsync(double targVolt, boolean slowDown, double speed) {
+        double STARTDECELERATE = 0.2;
+        double ACCELERATECONSTANT = 0.03;
+        double DECELERATECONSTANT = 0.02;
+        return armAsync(targVolt, slowDown, speed, STARTDECELERATE, ACCELERATECONSTANT, DECELERATECONSTANT);
+    }
 
 
     void stringNoBackDrive() {

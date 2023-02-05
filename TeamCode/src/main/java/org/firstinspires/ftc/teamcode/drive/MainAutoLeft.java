@@ -36,7 +36,6 @@ public class MainAutoLeft extends StarterAuto {
 
         packet.put("angle", imu.getAngularOrientation().firstAngle);
         dashboard.sendTelemetryPacket(packet);
-
         double startAngle = imu.getAngularOrientation().firstAngle;
         imuAngle();
 
@@ -71,6 +70,10 @@ public class MainAutoLeft extends StarterAuto {
                 .build();
 
         waitForStart();
+
+        telemetry.addData("string pot", stringpot.getVoltage());
+        telemetry.addData("armpot", armpot.getVoltage());
+        telemetry.update();
 
         int tag = getAprilTag(5);
         packet.put("APRIL CONE", tag);

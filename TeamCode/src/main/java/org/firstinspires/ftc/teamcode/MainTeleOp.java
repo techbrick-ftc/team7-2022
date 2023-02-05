@@ -62,7 +62,7 @@ public class MainTeleOp extends StarterAuto {
         while (opModeIsActive()) {
             packet.put("arm encoder", stringMotor.getCurrentPosition());
             packet.put("state", currentState);
-            dashboard.sendTelemetryPacket(packet);
+
 
             try {
                 cur2.copy(gamepad2);
@@ -100,7 +100,7 @@ public class MainTeleOp extends StarterAuto {
                 }
             }
             packet.put("last val", stringPotLastVal);
-            dashboard.sendTelemetryPacket(packet);
+
 
             if (cur2.back && !previousGamepad2.back) {
                 stringSync(0.368);
@@ -230,6 +230,9 @@ public class MainTeleOp extends StarterAuto {
             telemetry.addData("position", wristServo.getPosition());
             telemetry.addData("end", wristPosition);
             telemetry.addData("speedMod", speedMod);
+            telemetry.addData("string pot", stringpot.getVoltage());
+            telemetry.addData("armpot", armpot.getVoltage());
+
             telemetry.update();
 
             double y = -gamepad1.left_stick_y; // Remember, this is reversed!

@@ -23,16 +23,16 @@ public class StopOnWallAuto extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.748;
-        double stringDrop = 1.448;
+        double armDrop = 0.761;
+        double stringDrop = 1.719;
 
-        double stringPickUp = 1.339;
+        double stringPickUp = 1.56;
 
-        double armPicks[] = {2, 2.051, 2.111, 2.184, 2.202};
+        double armPicks[] = {2.02, 2.055, 2.13, 2.14, 2.202};
 
 
-        double stringWallLength = 1.158;
-        double armHeightWall = 1.925;
+        double stringWallLength = 1.55;
+        double armHeightWall = 1.88;
 
 
         boolean armDone0 = false;
@@ -77,6 +77,9 @@ public class StopOnWallAuto extends StarterAuto {
                 .build();
 
         waitForStart();
+        telemetry.addData("string pot", stringpot.getVoltage());
+        telemetry.addData("armpot", armpot.getVoltage());
+        telemetry.update();
 
         int tag = getAprilTag(5);
         packet.put("APRIL CONE", tag);
@@ -90,6 +93,7 @@ public class StopOnWallAuto extends StarterAuto {
         double timeStart = getRuntime();
 
         drive.followTrajectorySequenceAsync(traj1);
+
 
         double timeElap = getRuntime();
         while (opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)) {
@@ -111,7 +115,7 @@ public class StopOnWallAuto extends StarterAuto {
         grabbaOpen();
         sleep(200);
 
-        sleep(10000); // GRAB VALUES
+       //sleep(10000); // GRAB VALUES
 
         // Cycles with cones
         cycleloop:
@@ -127,7 +131,7 @@ public class StopOnWallAuto extends StarterAuto {
 
             while (opModeIsActive() && (!armDone || !stringDone)) {
                 //Go down to above cones, string inside wall
-                armDone = armAsync(armHeightWall, true, 1);
+                armDone = armAsync(armHeightWall, false, 1, 0.4, 0.03, 0.02);
                 stringDone = stringAsync(stringWallLength+0.35);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
@@ -137,8 +141,8 @@ public class StopOnWallAuto extends StarterAuto {
                 }
             }
             packet.addLine("im up here");
-            dashboard.sendTelemetryPacket(packet);
 
+            sleep(150);
             // Move string motor until pot values haven't changed - hitting the wall -
             double stringPotLastVal = stringpot.getVoltage();
             stringDone = false;
@@ -146,7 +150,7 @@ public class StopOnWallAuto extends StarterAuto {
                 stringDone = stringAsync(stringPickUp);
             }
             packet.addLine("im down here");
-            dashboard.sendTelemetryPacket(packet);
+
             stringMotor.setPower(0);
 
             armDone = false;
@@ -159,11 +163,15 @@ public class StopOnWallAuto extends StarterAuto {
             grabbaClose();
             sleep(300);
 
-            boolean armDone3 = false;
-
+            packet.put("status",1);
+            dashboard.sendTelemetryPacket(packet);
             // Move to midpoint and flip wrist
-
+            boolean armDone3 = false;
             while (opModeIsActive() && !armDone3) {
+                packet.put("status", 2);
+                packet.put("stringpot", stringpot.getVoltage());
+                packet.put("armpot", armpot.getVoltage());
+                dashboard.sendTelemetryPacket(packet);
                 armDone3 = armAsync(armDrop + 1, false, 1);
                 if ((getRuntime() - timeStart) >= timeout) {
                     break cycleloop;
@@ -172,6 +180,8 @@ public class StopOnWallAuto extends StarterAuto {
                     requestOpModeStop();
                 }
             }
+            packet.put("status", 3);
+            dashboard.sendTelemetryPacket(packet);
             wristDrop();
 
             boolean armDone4 = false;
@@ -191,6 +201,7 @@ public class StopOnWallAuto extends StarterAuto {
             stringMotor.setPower(0);
             grabbaOpen();
             sleep(200);
+            dashboard.sendTelemetryPacket(packet);
         }
 
         if (armpot.getVoltage() < 0.766) {
