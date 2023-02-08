@@ -19,7 +19,7 @@ public class PotenTest extends StarterAuto {
         initialize();
         waitForStart();
 
-        armSync(90);
+        armSync(90, false);
         sleep(1000);
 
         stringSync(50);

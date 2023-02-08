@@ -24,10 +24,10 @@ public class MainAutoRight extends StarterAuto {
         initAprilTags();
 
         double armDrop = 0.748;
-        double stringDrop = 1.448;
+        double stringDrop = 1.9;
 
-        double armPicks[] = {2.024, 2.046, 2.123, 2.155, 2.166};
-        double stringPicks[] = {0.798, 0.791, 0.792, 0.79, 0.793};
+        double[] armPicks = {2.031, 2.067, 2.113, 2.13, 2.217};
+        double[] stringPicks = {1.49, 1.498, 1.49, 1.495, 1.5};
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
@@ -52,7 +52,7 @@ public class MainAutoRight extends StarterAuto {
         TrajectorySequence traj1 = drive.trajectorySequenceBuilder(startPose)
                 .strafeTo(new Vector2d(36, -25.25), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                .turn(Math.toRadians(-73))
+                .turn(Math.toRadians(-72.75))
                 .build();
         TrajectorySequence endingStraight = drive.trajectorySequenceBuilder(traj1.end())
                 .turn(Math.toRadians(73))
@@ -114,6 +114,7 @@ public class MainAutoRight extends StarterAuto {
         grabbaOpen();
         sleep(200);
 
+        //sleep(10000); // pause to get values
         // Cycles with cones
         cycleloop:
         for (int cone = 0; cone < 5; cone++) {

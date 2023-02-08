@@ -177,12 +177,14 @@ public class MainTeleOp extends StarterAuto {
             if (currentState == states.Grab) {
                 grabbaClose();
                 sleep(300);
-                wristDrop();
                 currentState = states.Align;
             }
             if (currentState == states.Align) {
-                boolean armDone = armAsync(armDropPos, true, 1);
+                armSync(1.5, false);
+                wristDrop();
                 boolean stringDone = stringAsync(stringDropPos);
+                boolean armDone = armAsync(armDropPos, true, 1);
+
                 if (armDone && stringDone) {
                     currentState = states.Release;
                 }
