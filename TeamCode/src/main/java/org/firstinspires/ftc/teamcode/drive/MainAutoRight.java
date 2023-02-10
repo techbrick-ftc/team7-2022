@@ -23,11 +23,11 @@ public class MainAutoRight extends StarterAuto {
         initialize();
         initAprilTags();
 
-        double armDrop = 0.748;
-        double stringDrop = 1.9;
+        double armDrop = 0.788;
+        double stringDrop = 1.619;
 
-        double[] armPicks = {2.031, 2.067, 2.113, 2.13, 2.217};
-        double[] stringPicks = {1.49, 1.498, 1.49, 1.495, 1.5};
+        double[] armPicks = {2.021, 2.064, 2.08, 2.148, 2.185};
+        double[] stringPicks = {1.36, 1.358, 1.36, 1.36, 1.36};
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
@@ -55,7 +55,7 @@ public class MainAutoRight extends StarterAuto {
                 .turn(Math.toRadians(-72.75))
                 .build();
         TrajectorySequence endingStraight = drive.trajectorySequenceBuilder(traj1.end())
-                .turn(Math.toRadians(73))
+                .turn(Math.toRadians(72.75))
                 .strafeTo(new Vector2d(36, -15), SampleMecanumDrive.getVelocityConstraint(slowerVelocity, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                         SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
@@ -104,7 +104,6 @@ public class MainAutoRight extends StarterAuto {
         stringMotor.setPower(0.1);
 
         wristDrop();
-
 
         boolean stringDoneFirst = false;
         while (opModeIsActive() && (!armDone0 || !stringDoneFirst)) {

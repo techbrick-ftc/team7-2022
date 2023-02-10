@@ -24,10 +24,10 @@ public class MainAutoLeft extends StarterAuto {
         initAprilTags();
 
         double armDrop = 0.761;
-        double stringDrop = 1.8;
+        double stringDrop = 1.63;
 
-        double armPicks[] = {2.015, 2.07, 2.117, 2.153, 2.168};
-        double stringPicks[] = {1.594, 1.597, 1.61, 1.619, 1.604};
+        double armPicks[] = {2.018, 2.054, 2.12, 2.173, 2.23};
+        double stringPicks[] = {1.389, 1.398, 1.416, 1.41, 1.383};
 
         boolean armDone0 = false;
         boolean stringDone0 = false;
@@ -88,6 +88,7 @@ public class MainAutoLeft extends StarterAuto {
 
 
         drive.followTrajectorySequenceAsync(traj1);
+       // sleep(10000); // PAUSE TO GET VALUES
         double timeElap = getRuntime();
         while (opModeIsActive() && (drive.isBusy() || !armDoneFirst || !stringDone0)) {
             if (getRuntime() - timeElap > 0.15) {
@@ -108,7 +109,6 @@ public class MainAutoLeft extends StarterAuto {
         grabbaOpen();
         sleep(200);
 
-        //sleep(10000); // PAUSE TO GET VALUES
         // Cycles with cones
         cycleloop:
         for (int cone = 0; cone < 5; cone++) {

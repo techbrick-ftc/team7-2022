@@ -62,8 +62,8 @@ public class StarterAuto extends LinearOpMode {
     final float THRESHOLD_HIGH_DECIMATION_RANGE_METERS = 1.0f;
     final int THRESHOLD_NUM_FRAMES_NO_DETECTION_BEFORE_LOW_DECIMATION = 4;
     final double VOLTSPERTRIP = 1.438; // may need to change
-    final double VOLTSSTRINGUP = 0.92;
-    final double VOLTSSTRINGDOWN = 3.17;
+    final double VOLTSSTRINGUP = 0.770;
+    final double VOLTSSTRINGDOWN = 2.609;
     final double TICKSPERBLOCK = 805;   // ~400 per foot
     final double ARMROTATEMAXVOLT = 2.3;
     final double ARMVOLTSMID = 0.95;
